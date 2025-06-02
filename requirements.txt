@@ -1,0 +1,14 @@
+pandas
+numpy
+python-Levenshtein
+jellyfish
+sentence-transformers
+scikit-learn
+matplotlib
+seaborn
+networkx
+python-dotenv
+office365-rest-python-client
+pyyaml
+openpyxl
+tabulate

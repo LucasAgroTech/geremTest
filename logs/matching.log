@@ -1,0 +1,174 @@
+2025-06-02 17:54:42,815 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-02 17:54:42,815 - matching - INFO - Initializing data loader
+2025-06-02 17:54:42,815 - matching - INFO - Initializing matching algorithms
+2025-06-02 17:54:42,815 - matching - INFO - Initializing evaluator
+2025-06-02 17:54:42,815 - matching - INFO - Initializing visualizer
+2025-06-02 17:54:42,815 - matching - INFO - Running GEREM to Prospections matching
+2025-06-02 17:54:42,815 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-02 17:54:42,815 - matching - INFO - Loading GEREM interactions data
+2025-06-02 17:54:42,816 - matching - ERROR - Error loading data: SharePoint client not initialized. Check your credentials.
+2025-06-02 17:54:42,816 - matching - ERROR - Error running matching: SharePoint client not initialized. Check your credentials.
+2025-06-02 17:54:42,816 - matching - ERROR - Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 663, in main
+    prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visualizer, logger)
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 66, in run_gerem_prospecoes_matching
+    gerem_df = data_loader.load_from_sharepoint(
+        config['sharepoint']['data_path']['gerem_interacoes']
+    )
+  File "/Users/lucaspinheiro/Desktop/geremTest/data_loader.py", line 41, in load_from_sharepoint
+    raise ValueError("SharePoint client not initialized. Check your credentials.")
+ValueError: SharePoint client not initialized. Check your credentials.
+
+2025-06-02 17:57:29,688 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-02 17:57:29,688 - matching - INFO - Initializing data loader
+2025-06-02 17:57:29,688 - matching - INFO - Initializing matching algorithms
+2025-06-02 17:57:29,688 - matching - INFO - Initializing evaluator
+2025-06-02 17:57:29,688 - matching - INFO - Initializing visualizer
+2025-06-02 17:57:29,688 - matching - INFO - Running GEREM to Prospections matching
+2025-06-02 17:57:29,689 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-02 17:57:29,689 - matching - INFO - Loading GEREM interactions data
+2025-06-02 17:57:29,689 - matching - ERROR - Error loading data: SharePoint client not initialized. Check your credentials.
+2025-06-02 17:57:29,689 - matching - ERROR - Error running matching: SharePoint client not initialized. Check your credentials.
+2025-06-02 17:57:29,689 - matching - ERROR - Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 663, in main
+    prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visualizer, logger)
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 66, in run_gerem_prospecoes_matching
+    gerem_df = data_loader.load_from_sharepoint(
+        config['sharepoint']['data_path']['gerem_interacoes']
+    )
+  File "/Users/lucaspinheiro/Desktop/geremTest/data_loader.py", line 41, in load_from_sharepoint
+    raise ValueError("SharePoint client not initialized. Check your credentials.")
+ValueError: SharePoint client not initialized. Check your credentials.
+
+2025-06-02 18:03:21,690 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-02 18:03:21,690 - matching - INFO - Initializing data loader
+2025-06-02 18:03:27,082 - matching - INFO - Initializing matching algorithms
+2025-06-02 18:03:27,082 - matching - INFO - Initializing evaluator
+2025-06-02 18:03:27,082 - matching - INFO - Initializing visualizer
+2025-06-02 18:03:27,082 - matching - INFO - Running GEREM to Prospections matching
+2025-06-02 18:03:27,082 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-02 18:03:27,082 - matching - INFO - Loading GEREM interactions data
+2025-06-02 18:03:29,587 - matching - ERROR - Error loading data: Erro ao baixar arquivo: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value / Alternativa: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+2025-06-02 18:03:29,587 - matching - ERROR - Error running matching: Erro ao baixar arquivo: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value / Alternativa: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+2025-06-02 18:03:29,593 - matching - ERROR - Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/office365_api/sharepoint_client.py", line 96, in download_file
+    file = File.open_binary(self.ctx, file_url)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/office365/sharepoint/files/file.py", line 649, in open_binary
+    response = context.pending_request().execute_request_direct(request)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/office365/runtime/client_request.py", line 101, in execute_request_direct
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/office365_api/sharepoint_client.py", line 134, in download_file
+    raise Exception(f"Todas as tentativas de download falharam para: {file_path}")
+Exception: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 663, in main
+    prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visualizer, logger)
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 66, in run_gerem_prospecoes_matching
+    gerem_df = data_loader.load_from_sharepoint(
+        config['sharepoint']['data_path']['gerem_interacoes']
+    )
+  File "/Users/lucaspinheiro/Desktop/geremTest/data_loader.py", line 45, in load_from_sharepoint
+    file_content = self.sp_client.download_file(file_path)
+  File "/Users/lucaspinheiro/Desktop/geremTest/office365_api/sharepoint_client.py", line 136, in download_file
+    raise Exception(f"Erro ao baixar arquivo: {str(e)} / Alternativa: {str(alt_error)}")
+Exception: Erro ao baixar arquivo: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value / Alternativa: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+
+2025-06-02 18:08:46,671 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-02 18:08:46,671 - matching - INFO - Initializing data loader
+2025-06-02 18:08:49,961 - matching - INFO - Initializing matching algorithms
+2025-06-02 18:08:49,961 - matching - INFO - Initializing evaluator
+2025-06-02 18:08:49,961 - matching - INFO - Initializing visualizer
+2025-06-02 18:08:49,961 - matching - INFO - Running GEREM to Prospections matching
+2025-06-02 18:08:49,961 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-02 18:08:49,961 - matching - INFO - Loading GEREM interactions data
+2025-06-02 18:08:52,585 - matching - ERROR - Error loading data: Erro ao baixar arquivo: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value / Alternativa: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+2025-06-02 18:08:52,585 - matching - ERROR - Error running matching: Erro ao baixar arquivo: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value / Alternativa: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+2025-06-02 18:08:52,595 - matching - ERROR - Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/office365_api/sharepoint_client.py", line 96, in download_file
+    file = File.open_binary(self.ctx, file_url)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/office365/sharepoint/files/file.py", line 649, in open_binary
+    response = context.pending_request().execute_request_direct(request)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/office365/runtime/client_request.py", line 101, in execute_request_direct
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/office365_api/sharepoint_client.py", line 134, in download_file
+    raise Exception(f"Todas as tentativas de download falharam para: {file_path}")
+Exception: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 663, in main
+    prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visualizer, logger)
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 66, in run_gerem_prospecoes_matching
+    gerem_df = data_loader.load_from_sharepoint(
+        config['sharepoint']['data_path']['gerem_interacoes']
+    )
+  File "/Users/lucaspinheiro/Desktop/geremTest/data_loader.py", line 45, in load_from_sharepoint
+    file_content = self.sp_client.download_file(file_path)
+  File "/Users/lucaspinheiro/Desktop/geremTest/office365_api/sharepoint_client.py", line 136, in download_file
+    raise Exception(f"Erro ao baixar arquivo: {str(e)} / Alternativa: {str(alt_error)}")
+Exception: Erro ao baixar arquivo: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value / Alternativa: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+
+2025-06-02 18:11:00,707 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-02 18:11:00,708 - matching - INFO - Initializing data loader
+2025-06-02 18:11:05,550 - matching - INFO - Initializing matching algorithms
+2025-06-02 18:11:05,550 - matching - INFO - Initializing evaluator
+2025-06-02 18:11:05,550 - matching - INFO - Initializing visualizer
+2025-06-02 18:11:05,550 - matching - INFO - Running GEREM to Prospections matching
+2025-06-02 18:11:05,551 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-02 18:11:05,551 - matching - INFO - Loading GEREM interactions data
+2025-06-02 18:11:08,340 - matching - ERROR - Error loading data: Erro ao baixar arquivo: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos%20Compartilhados/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value / Alternativa: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+2025-06-02 18:11:08,340 - matching - ERROR - Error running matching: Erro ao baixar arquivo: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos%20Compartilhados/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value / Alternativa: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+2025-06-02 18:11:08,346 - matching - ERROR - Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/office365_api/sharepoint_client.py", line 96, in download_file
+    file = File.open_binary(self.ctx, file_url)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/office365/sharepoint/files/file.py", line 649, in open_binary
+    response = context.pending_request().execute_request_direct(request)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/office365/runtime/client_request.py", line 101, in execute_request_direct
+    response.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/requests/models.py", line 1024, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos%20Compartilhados/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/office365_api/sharepoint_client.py", line 135, in download_file
+    raise Exception(f"Todas as tentativas de download falharam para: {file_path}")
+Exception: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 663, in main
+    prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visualizer, logger)
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 66, in run_gerem_prospecoes_matching
+    gerem_df = data_loader.load_from_sharepoint(
+        config['sharepoint']['data_path']['gerem_interacoes']
+    )
+  File "/Users/lucaspinheiro/Desktop/geremTest/data_loader.py", line 45, in load_from_sharepoint
+    file_content = self.sp_client.download_file(file_path)
+  File "/Users/lucaspinheiro/Desktop/geremTest/office365_api/sharepoint_client.py", line 137, in download_file
+    raise Exception(f"Erro ao baixar arquivo: {str(e)} / Alternativa: {str(alt_error)}")
+Exception: Erro ao baixar arquivo: 404 Client Error: Not Found for url: https://embrapii.sharepoint.com/sites/GEPES/_api/web/getFileByServerRelativePath%28DecodedUrl%3D%27/sites/GEPES/Documentos%20Compartilhados/General/Lucas%20Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx%27%29/%5C%24value / Alternativa: Todas as tentativas de download falharam para: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+
