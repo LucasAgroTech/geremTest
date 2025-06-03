@@ -1,14 +1,24 @@
-pandas
-numpy
-python-Levenshtein
+# EMBRAPII Matching Requirements
+# ================================
+
+# Core dependencies
 jellyfish
-sentence-transformers
-scikit-learn
 matplotlib
-seaborn
 networkx
-python-dotenv
+numpy
 office365-rest-python-client
-pyyaml
 openpyxl
+pandas
+python-Levenshtein
+python-dotenv
+pyyaml
+scikit-learn
+seaborn
+sentence-transformers
 tabulate
+
+# Chain analysis dependencies
+plotly>=5.15.0
+scipy>=1.11.0
+streamlit-option-menu>=0.3.0
+streamlit>=1.28.0
