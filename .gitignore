@@ -1,6 +1,112 @@
+# Python
 venv/
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+
+# Environment files
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# System files
 .DS_Store
-.xlsx
-.log
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Excel and Office files
+*.xlsx
+*.xls
+*.xlsm
+*.xlsb
+*.xltx
+*.xltm
+*.doc
+*.docx
+*.ppt
+*.pptx
+
+# CSV files (uncomment if you want to ignore them)
+# *.csv
+
+# Log files
+*.log
+logs/
+*.log.*
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Results and output directories
+results/*/
+outputs/
+output/
+
+# Data files (large datasets)
+data/*.xlsx
+data/*.xls
+data/*.csv
+data/*.json
+data/*.db
+data/*.sqlite
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+pyvenv.cfg
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Configuration files with sensitive data
+config_local.py
+config_local.yaml
+secrets.yaml
+credentials.json
