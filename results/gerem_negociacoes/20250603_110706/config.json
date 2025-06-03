@@ -1,0 +1,124 @@
+{
+    "sharepoint": {
+        "site": "https://embrapii.sharepoint.com/sites/GEPES",
+        "email": "lucas.pinheiro@embrapii.org.br",
+        "password": "Lcs9567@@",
+        "data_path": {
+            "gerem_interacoes": "General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx",
+            "prospeccoes": "DWPII/srinfo/prospeccao_prospeccao.xlsx",
+            "negociacoes": "DWPII/srinfo/negociacoes_empresas.xlsx",
+            "negociacoes_negociacoes": "DWPII/srinfo/negociacoes_negociacoes.xlsx",
+            "projetos": "DWPII/srinfo/portfolio.xlsx",
+            "info_empresas": "DWPII/srinfo/info_empresas.xlsx"
+        }
+    },
+    "local_paths": {
+        "data": "data",
+        "temp": "temp",
+        "results": "results",
+        "logs": "logs",
+        "evaluation": "evaluation",
+        "visualization": "visualization"
+    },
+    "matching": {
+        "column_mapping": {
+            "gerem": {
+                "id": "id_prospeccao",
+                "empresa": "nome_empresa",
+                "nome_capital": "nome_empresa",
+                "data": "data_prospeccao"
+            },
+            "prospeccoes": {
+                "id": "id_prospeccao",
+                "empresa": "nome_empresa",
+                "data": "data_prospeccao",
+                "cnpj": "cnpj_empresa",
+                "unidade": "unidade_embrapii"
+            },
+            "negociacoes": {
+                "id": "codigo_negociacao",
+                "empresa": "razao_social",
+                "cnpj": "cnpj",
+                "data": "data_prim_ver_prop_tec",
+                "unidade": "unidade_embrapii"
+            },
+            "negociacoes_negociacoes": {
+                "id": "codigo_negociacao",
+                "data": "data_prim_ver_prop_tec"
+            },
+            "projetos": {
+                "id": "codigo_projeto",
+                "empresa": "info_empresa",
+                "data": "data_inicio",
+                "unidade": "unidade_embrapii"
+            },
+            "info_empresas": {
+                "cnpj": "cnpj",
+                "razao_social": "razao_social"
+            }
+        },
+        "algorithms": {
+            "levenshtein": {
+                "enabled": true,
+                "threshold": 0.7
+            },
+            "jaro_winkler": {
+                "enabled": true,
+                "threshold": 0.8
+            },
+            "embedding": {
+                "enabled": true,
+                "threshold": 0.6,
+                "model": "paraphrase-multilingual-MiniLM-L12-v2"
+            }
+        },
+        "threshold_test": {
+            "levenshtein": [
+                0.5,
+                0.6,
+                0.7,
+                0.8,
+                0.9
+            ],
+            "jaro_winkler": [
+                0.7,
+                0.75,
+                0.8,
+                0.85,
+                0.9
+            ],
+            "embedding": [
+                0.5,
+                0.6,
+                0.7,
+                0.8,
+                0.9
+            ]
+        }
+    },
+    "evaluation": {
+        "metrics": [
+            "precision",
+            "recall",
+            "f1",
+            "agreement"
+        ],
+        "generate_visualizations": true,
+        "save_detailed_results": true,
+        "best_algorithm_criteria": "f1_score",
+        "run_threshold_comparison": false
+    },
+    "visualization": {
+        "figsize": [
+            12,
+            8
+        ],
+        "palette": "viridis",
+        "dpi": 300
+    },
+    "logging": {
+        "level": "INFO",
+        "file": "matching.log",
+        "console": true
+    }
+}

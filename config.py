@@ -16,7 +16,9 @@ DEFAULT_CONFIG = {
             'gerem_interacoes': 'General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx',
             'prospeccoes': 'DWPII/srinfo/prospeccao_prospeccao.xlsx',
             'negociacoes': 'DWPII/srinfo/negociacoes_empresas.xlsx',
-            'projetos': 'DWPII/srinfo/portfolio.xlsx'
+            'negociacoes_negociacoes': 'DWPII/srinfo/negociacoes_negociacoes.xlsx',
+            'projetos': 'DWPII/srinfo/portfolio.xlsx',
+            'info_empresas': 'DWPII/srinfo/info_empresas.xlsx'
         }
     },
     
@@ -35,10 +37,10 @@ DEFAULT_CONFIG = {
         # Column mappings
         'column_mapping': {
             'gerem': {
-                'id': 'id_gerem',
-                'empresa': 'empresa',
-                'nome_capital': 'empresa_nome_capital',
-                'data': 'data_interacao'
+                'id': 'id_prospeccao',
+                'empresa': 'nome_empresa',
+                'nome_capital': 'nome_empresa',
+                'data': 'data_prospeccao'
             },
             'prospeccoes': {
                 'id': 'id_prospeccao',
@@ -54,11 +56,19 @@ DEFAULT_CONFIG = {
                 'data': 'data_prim_ver_prop_tec',
                 'unidade': 'unidade_embrapii'
             },
+            'negociacoes_negociacoes': {
+                'id': 'codigo_negociacao',
+                'data': 'data_prim_ver_prop_tec'
+            },
             'projetos': {
                 'id': 'codigo_projeto',
-                'empresa': 'nome_empresa',
+                'empresa': 'info_empresa',
                 'data': 'data_inicio',
                 'unidade': 'unidade_embrapii'
+            },
+            'info_empresas': {
+                'cnpj': 'cnpj',
+                'razao_social': 'razao_social'
             }
         },
         
@@ -92,7 +102,8 @@ DEFAULT_CONFIG = {
         'metrics': ['precision', 'recall', 'f1', 'agreement'],
         'generate_visualizations': True,
         'save_detailed_results': True,
-        'best_algorithm_criteria': 'f1_score'  # Which metric to use for selecting the best algorithm
+        'best_algorithm_criteria': 'f1_score',  # Which metric to use for selecting the best algorithm
+        'run_threshold_comparison': False  # Desabilitar threshold comparison para acelerar
     },
     
     # Visualization settings

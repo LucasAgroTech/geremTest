@@ -50,7 +50,7 @@ def setup_logging(config):
     
     return logger
 
-def run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visualizer, logger):
+def run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger):
     """Run matching between GEREM interactions and prospections"""
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
@@ -59,6 +59,19 @@ def run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visua
     os.makedirs(results_dir, exist_ok=True)
     
     logger.info("Starting GEREM to Prospections matching")
+    
+    # Create specific evaluator and visualizer for prospections
+    evaluator = MatchingEvaluator({
+        'metrics': config['evaluation']['metrics'],
+        'output_path': config['local_paths']['evaluation']
+    }, matching_type='prospecoes')
+    
+    visualizer = MatchingVisualizer({
+        'output_path': config['local_paths']['visualization'],
+        'figsize': config['visualization']['figsize'],
+        'palette': config['visualization']['palette'],
+        'dpi': config['visualization']['dpi']
+    }, matching_type='prospecoes')
     
     # Load data
     try:
@@ -161,7 +174,7 @@ def run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visua
     
     # Create visualizations if enabled
     if config['evaluation']['generate_visualizations']:
-        logger.info("Generating visualizations")
+        logger.info("Generating visualizations for prospections")
         
         # Match counts
         visualizer.plot_match_counts(results, save_path='match_counts.png')
@@ -183,22 +196,26 @@ def run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visua
             logger.warning(f"Could not generate network visualization: {e}")
     
     # Run threshold comparison
-    logger.info("Running threshold comparison")
-    threshold_results = evaluator.compare_thresholds(
-        gerem_df, prospecoes_df, matcher, source_col, target_col, date_cols,
-        config['matching']['threshold_test']
-    )
-    
-    # Save threshold results
-    for algo, threshold_df in threshold_results.items():
-        threshold_df.to_excel(os.path.join(results_dir, f'threshold_comparison_{algo}.xlsx'), index=False)
-    
-    # Visualize threshold comparison
-    if config['evaluation']['generate_visualizations']:
-        evaluator.plot_threshold_comparison(threshold_results, metric='match_count', 
-                                           save_path=os.path.join(results_dir, 'threshold_comparison_match_count.png'))
-        evaluator.plot_threshold_comparison(threshold_results, metric='unique_source', 
-                                           save_path=os.path.join(results_dir, 'threshold_comparison_unique_source.png'))
+    if config['evaluation'].get('run_threshold_comparison', True):
+        logger.info("Running threshold comparison")
+        threshold_results = evaluator.compare_thresholds(
+            gerem_df, prospecoes_df, matcher, source_col, target_col, date_cols,
+            config['matching']['threshold_test']
+        )
+        
+        # Save threshold results
+        for algo, threshold_df in threshold_results.items():
+            threshold_df.to_excel(os.path.join(results_dir, f'threshold_comparison_{algo}.xlsx'), index=False)
+        
+        # Visualize threshold comparison
+        if config['evaluation']['generate_visualizations']:
+            evaluator.plot_threshold_comparison(threshold_results, metric='match_count', 
+                                               save_path='threshold_comparison_match_count.png')
+            evaluator.plot_threshold_comparison(threshold_results, metric='unique_source', 
+                                               save_path='threshold_comparison_unique_source.png')
+    else:
+        logger.info("Skipping threshold comparison (disabled in config)")
+        threshold_results = {}
     
     # Determine best algorithm based on criteria
     if config['evaluation']['best_algorithm_criteria'] == 'match_count':
@@ -229,7 +246,7 @@ def run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visua
         'results_dir': results_dir
     }
 
-def run_gerem_negociacoes_matching(config, data_loader, matcher, evaluator, visualizer, logger):
+def run_gerem_negociacoes_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger):
     """Run matching between GEREM interactions and negotiations"""
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
@@ -239,6 +256,19 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, evaluator, visu
     
     logger.info("Starting GEREM to Negotiations matching")
     
+    # Create specific evaluator and visualizer for negotiations
+    evaluator = MatchingEvaluator({
+        'metrics': config['evaluation']['metrics'],
+        'output_path': config['local_paths']['evaluation']
+    }, matching_type='negociacoes')
+    
+    visualizer = MatchingVisualizer({
+        'output_path': config['local_paths']['visualization'],
+        'figsize': config['visualization']['figsize'],
+        'palette': config['visualization']['palette'],
+        'dpi': config['visualization']['dpi']
+    }, matching_type='negociacoes')
+    
     # Load data
     try:
         logger.info("Loading GEREM interactions data")
@@ -247,11 +277,15 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, evaluator, visu
         )
         logger.info(f"Loaded {len(gerem_df)} GEREM interactions")
         
-        logger.info("Loading negotiations data")
-        negociacoes_df = data_loader.load_from_sharepoint(
-            config['sharepoint']['data_path']['negociacoes']
+        logger.info("Loading and consolidating negotiations data")
+        # Usar a nova função que consolida todas as planilhas de negociações
+        negociacoes_df = data_loader.load_and_merge_negociacoes(
+            config['sharepoint']['data_path']['negociacoes'],
+            config['sharepoint']['data_path']['negociacoes_negociacoes'],
+            config['sharepoint']['data_path']['info_empresas'],
+            config['matching']['column_mapping']
         )
-        logger.info(f"Loaded {len(negociacoes_df)} negotiations")
+        logger.info(f"Loaded and consolidated {len(negociacoes_df)} negotiations")
         
         # Save copies to results directory
         gerem_df.to_excel(os.path.join(results_dir, 'gerem_input.xlsx'), index=False)
@@ -263,14 +297,14 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, evaluator, visu
     
     # Get column names from config
     gerem_col_map = config['matching']['column_mapping']['gerem']
-    negoc_col_map = config['matching']['column_mapping']['negociacoes']
+    neg_col_map = config['matching']['column_mapping']['negociacoes']
     
     # Define source and target columns for matching
     source_col = gerem_col_map['nome_capital']
-    target_col = negoc_col_map['empresa']
+    target_col = neg_col_map['empresa']
     
     # Define date columns for filtering
-    date_cols = (gerem_col_map['data'], negoc_col_map['data'])
+    date_cols = (gerem_col_map['data'], neg_col_map['data'])
     
     # Initialize results dictionary
     results = {}
@@ -340,7 +374,7 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, evaluator, visu
     
     # Create visualizations if enabled
     if config['evaluation']['generate_visualizations']:
-        logger.info("Generating visualizations")
+        logger.info("Generating visualizations for negotiations")
         
         # Match counts
         visualizer.plot_match_counts(results, save_path='match_counts.png')
@@ -354,39 +388,53 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, evaluator, visu
         
         # Match examples
         visualizer.plot_match_examples(results, n_examples=5, save_path='match_examples.png')
+        
+        # Network visualization
+        try:
+            visualizer.plot_comparative_network(results, save_path='network_visualization.png')
+        except Exception as e:
+            logger.warning(f"Could not generate network visualization: {e}")
     
     # Run threshold comparison
-    logger.info("Running threshold comparison")
-    threshold_results = evaluator.compare_thresholds(
-        gerem_df, negociacoes_df, matcher, source_col, target_col, date_cols,
-        config['matching']['threshold_test']
-    )
-    
-    # Save threshold results
-    for algo, threshold_df in threshold_results.items():
-        threshold_df.to_excel(os.path.join(results_dir, f'threshold_comparison_{algo}.xlsx'), index=False)
-    
-    # Visualize threshold comparison
-    if config['evaluation']['generate_visualizations']:
-        evaluator.plot_threshold_comparison(threshold_results, metric='match_count', 
-                                           save_path=os.path.join(results_dir, 'threshold_comparison_match_count.png'))
-        evaluator.plot_threshold_comparison(threshold_results, metric='unique_source', 
-                                           save_path=os.path.join(results_dir, 'threshold_comparison_unique_source.png'))
+    if config['evaluation'].get('run_threshold_comparison', True):
+        logger.info("Running threshold comparison")
+        threshold_results = evaluator.compare_thresholds(
+            gerem_df, negociacoes_df, matcher, source_col, target_col, date_cols,
+            config['matching']['threshold_test']
+        )
+        
+        # Save threshold results
+        for algo, threshold_df in threshold_results.items():
+            threshold_df.to_excel(os.path.join(results_dir, f'threshold_comparison_{algo}.xlsx'), index=False)
+        
+        # Visualize threshold comparison
+        if config['evaluation']['generate_visualizations']:
+            evaluator.plot_threshold_comparison(threshold_results, metric='match_count', 
+                                               save_path='threshold_comparison_match_count.png')
+            evaluator.plot_threshold_comparison(threshold_results, metric='unique_source', 
+                                               save_path='threshold_comparison_unique_source.png')
+    else:
+        logger.info("Skipping threshold comparison (disabled in config)")
+        threshold_results = {}
     
     # Determine best algorithm based on criteria
-    if config['evaluation']['best_algorithm_criteria'] == 'match_count':
-        best_algo = eval_results.loc[eval_results['match_count'].idxmax(), 'algorithm']
-    elif config['evaluation']['best_algorithm_criteria'] == 'unique_source':
-        best_algo = eval_results.loc[eval_results['unique_source'].idxmax(), 'algorithm']
+    if len(results) > 0:
+        if config['evaluation']['best_algorithm_criteria'] == 'match_count':
+            best_algo = eval_results.loc[eval_results['match_count'].idxmax(), 'algorithm']
+        elif config['evaluation']['best_algorithm_criteria'] == 'unique_source':
+            best_algo = eval_results.loc[eval_results['unique_source'].idxmax(), 'algorithm']
+        else:
+            # Default to first algorithm
+            best_algo = eval_results.iloc[0]['algorithm']
+        
+        logger.info(f"Best algorithm based on {config['evaluation']['best_algorithm_criteria']}: {best_algo}")
+        
+        # Save best matches to separate file
+        if best_algo in results:
+            results[best_algo].to_excel(os.path.join(results_dir, 'best_matches.xlsx'), index=False)
     else:
-        # Default to first algorithm
-        best_algo = eval_results.iloc[0]['algorithm']
-    
-    logger.info(f"Best algorithm based on {config['evaluation']['best_algorithm_criteria']}: {best_algo}")
-    
-    # Save best matches to separate file
-    if best_algo in results:
-        results[best_algo].to_excel(os.path.join(results_dir, 'best_matches.xlsx'), index=False)
+        best_algo = 'N/A'
+        logger.info("No matching algorithms produced results")
     
     # Save configuration used
     with open(os.path.join(results_dir, 'config.json'), 'w') as f:
@@ -402,7 +450,7 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, evaluator, visu
         'results_dir': results_dir
     }
 
-def run_gerem_projetos_matching(config, data_loader, matcher, evaluator, visualizer, logger):
+def run_gerem_projetos_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger):
     """Run matching between GEREM interactions and projects"""
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     
@@ -411,6 +459,19 @@ def run_gerem_projetos_matching(config, data_loader, matcher, evaluator, visuali
     os.makedirs(results_dir, exist_ok=True)
     
     logger.info("Starting GEREM to Projects matching")
+    
+    # Create specific evaluator and visualizer for projects
+    evaluator = MatchingEvaluator({
+        'metrics': config['evaluation']['metrics'],
+        'output_path': config['local_paths']['evaluation']
+    }, matching_type='projetos')
+    
+    visualizer = MatchingVisualizer({
+        'output_path': config['local_paths']['visualization'],
+        'figsize': config['visualization']['figsize'],
+        'palette': config['visualization']['palette'],
+        'dpi': config['visualization']['dpi']
+    }, matching_type='projetos')
     
     # Load data
     try:
@@ -513,7 +574,7 @@ def run_gerem_projetos_matching(config, data_loader, matcher, evaluator, visuali
     
     # Create visualizations if enabled
     if config['evaluation']['generate_visualizations']:
-        logger.info("Generating visualizations")
+        logger.info("Generating visualizations for projects")
         
         # Match counts
         visualizer.plot_match_counts(results, save_path='match_counts.png')
@@ -529,22 +590,26 @@ def run_gerem_projetos_matching(config, data_loader, matcher, evaluator, visuali
         visualizer.plot_match_examples(results, n_examples=5, save_path='match_examples.png')
     
     # Run threshold comparison
-    logger.info("Running threshold comparison")
-    threshold_results = evaluator.compare_thresholds(
-        gerem_df, projetos_df, matcher, source_col, target_col, date_cols,
-        config['matching']['threshold_test']
-    )
-    
-    # Save threshold results
-    for algo, threshold_df in threshold_results.items():
-        threshold_df.to_excel(os.path.join(results_dir, f'threshold_comparison_{algo}.xlsx'), index=False)
-    
-    # Visualize threshold comparison
-    if config['evaluation']['generate_visualizations']:
-        evaluator.plot_threshold_comparison(threshold_results, metric='match_count', 
-                                           save_path=os.path.join(results_dir, 'threshold_comparison_match_count.png'))
-        evaluator.plot_threshold_comparison(threshold_results, metric='unique_source', 
-                                           save_path=os.path.join(results_dir, 'threshold_comparison_unique_source.png'))
+    if config['evaluation'].get('run_threshold_comparison', True):
+        logger.info("Running threshold comparison")
+        threshold_results = evaluator.compare_thresholds(
+            gerem_df, projetos_df, matcher, source_col, target_col, date_cols,
+            config['matching']['threshold_test']
+        )
+        
+        # Save threshold results
+        for algo, threshold_df in threshold_results.items():
+            threshold_df.to_excel(os.path.join(results_dir, f'threshold_comparison_{algo}.xlsx'), index=False)
+        
+        # Visualize threshold comparison
+        if config['evaluation']['generate_visualizations']:
+            evaluator.plot_threshold_comparison(threshold_results, metric='match_count', 
+                                               save_path='threshold_comparison_match_count.png')
+            evaluator.plot_threshold_comparison(threshold_results, metric='unique_source', 
+                                               save_path='threshold_comparison_unique_source.png')
+    else:
+        logger.info("Skipping threshold comparison (disabled in config)")
+        threshold_results = {}
     
     # Determine best algorithm based on criteria
     if config['evaluation']['best_algorithm_criteria'] == 'match_count':
@@ -638,14 +703,14 @@ def main():
         
         # Evaluator
         logger.info("Initializing evaluator")
-        evaluator = MatchingEvaluator({
+        base_evaluator = MatchingEvaluator({
             'metrics': config['evaluation']['metrics'],
             'output_path': config['local_paths']['evaluation']
         })
         
         # Visualizer
         logger.info("Initializing visualizer")
-        visualizer = MatchingVisualizer({
+        base_visualizer = MatchingVisualizer({
             'output_path': config['local_paths']['visualization'],
             'figsize': config['visualization']['figsize'],
             'palette': config['visualization']['palette'],
@@ -660,19 +725,19 @@ def main():
     try:
         if args.mode == 'prospecoes' or args.mode == 'all':
             logger.info("Running GEREM to Prospections matching")
-            prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, evaluator, visualizer, logger)
+            prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger)
             logger.info(f"GEREM to Prospections matching completed. Results in {prospecoes_results['results_dir']}")
             logger.info(f"Best algorithm: {prospecoes_results['best_algorithm']}")
         
         if args.mode == 'negociacoes' or args.mode == 'all':
             logger.info("Running GEREM to Negotiations matching")
-            negociacoes_results = run_gerem_negociacoes_matching(config, data_loader, matcher, evaluator, visualizer, logger)
+            negociacoes_results = run_gerem_negociacoes_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger)
             logger.info(f"GEREM to Negotiations matching completed. Results in {negociacoes_results['results_dir']}")
             logger.info(f"Best algorithm: {negociacoes_results['best_algorithm']}")
         
         if args.mode == 'projetos' or args.mode == 'all':
             logger.info("Running GEREM to Projects matching")
-            projetos_results = run_gerem_projetos_matching(config, data_loader, matcher, evaluator, visualizer, logger)
+            projetos_results = run_gerem_projetos_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger)
             logger.info(f"GEREM to Projects matching completed. Results in {projetos_results['results_dir']}")
             logger.info(f"Best algorithm: {projetos_results['best_algorithm']}")
         

@@ -3,9 +3,10 @@ import numpy as np
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
 
 class MatchingEvaluator:
-    def __init__(self, config=None):
+    def __init__(self, config=None, matching_type=None):
         """Initialize evaluator with configuration"""
         # Default configuration
         self.config = {
@@ -17,6 +18,19 @@ class MatchingEvaluator:
         # Update with provided config if any
         if config:
             self.config.update(config)
+        
+        # Set matching type for organizing images
+        self.matching_type = matching_type or 'general'
+        
+        # Create output directory with matching type subdirectory
+        self.type_output_path = os.path.join(self.config['output_path'], self.matching_type)
+        os.makedirs(self.type_output_path, exist_ok=True)
+    
+    def _get_save_path(self, save_path):
+        """Get the full save path with matching type subdirectory"""
+        if save_path:
+            return os.path.join(self.type_output_path, save_path)
+        return None
     
     def evaluate_without_ground_truth(self, results_dict):
         """
@@ -280,12 +294,14 @@ class MatchingEvaluator:
         
         plt.xlabel('Threshold')
         plt.ylabel(metric.replace('_', ' ').title())
-        plt.title(f'Effect of Threshold on {metric.replace("_", " ").title()}')
+        plt.title(f'Effect of Threshold on {metric.replace("_", " ").title()} - {self.matching_type.title()}')
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.7)
         
-        if save_path:
-            plt.savefig(save_path)
+        full_path = self._get_save_path(save_path)
+        if full_path:
+            plt.savefig(full_path)
+            print(f"📊 Gráfico salvo: {full_path}")
         
         plt.show()
     
@@ -311,12 +327,14 @@ class MatchingEvaluator:
         
         plt.xlabel('Similarity Score')
         plt.ylabel('Density')
-        plt.title('Distribution of Similarity Scores by Algorithm')
+        plt.title(f'Distribution of Similarity Scores by Algorithm - {self.matching_type.title()}')
         plt.legend()
         plt.grid(True, linestyle='--', alpha=0.7)
         
-        if save_path:
-            plt.savefig(save_path)
+        full_path = self._get_save_path(save_path)
+        if full_path:
+            plt.savefig(full_path)
+            print(f"📊 Gráfico salvo: {full_path}")
         
         plt.show()
     
@@ -334,9 +352,11 @@ class MatchingEvaluator:
         plt.figure(figsize=(8, 6))
         
         sns.heatmap(agreement_df, annot=True, cmap='YlGnBu', vmin=0, vmax=1)
-        plt.title('Agreement Between Matching Algorithms')
+        plt.title(f'Agreement Between Matching Algorithms - {self.matching_type.title()}')
         
-        if save_path:
-            plt.savefig(save_path)
+        full_path = self._get_save_path(save_path)
+        if full_path:
+            plt.savefig(full_path)
+            print(f"📊 Gráfico salvo: {full_path}")
         
         plt.show()

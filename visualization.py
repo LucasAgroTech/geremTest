@@ -6,7 +6,7 @@ import os
 from matplotlib.colors import LinearSegmentedColormap
 
 class MatchingVisualizer:
-    def __init__(self, config=None):
+    def __init__(self, config=None, matching_type=None):
         """Initialize visualizer with configuration"""
         # Default configuration
         self.config = {
@@ -20,8 +20,18 @@ class MatchingVisualizer:
         if config:
             self.config.update(config)
         
-        # Create output directory if it doesn't exist
-        os.makedirs(self.config['output_path'], exist_ok=True)
+        # Set matching type for organizing images
+        self.matching_type = matching_type or 'general'
+        
+        # Create output directory with matching type subdirectory
+        self.type_output_path = os.path.join(self.config['output_path'], self.matching_type)
+        os.makedirs(self.type_output_path, exist_ok=True)
+    
+    def _get_save_path(self, save_path):
+        """Get the full save path with matching type subdirectory"""
+        if save_path:
+            return os.path.join(self.type_output_path, save_path)
+        return None
     
     def plot_match_counts(self, results_dict, save_path=None):
         """
@@ -51,7 +61,7 @@ class MatchingVisualizer:
             plt.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 5, 
                     str(count), ha='center', va='bottom', fontweight='bold')
         
-        plt.title('Number of Matches by Algorithm', fontsize=16)
+        plt.title(f'Number of Matches by Algorithm - {self.matching_type.title()}', fontsize=16)
         plt.xlabel('Algorithm', fontsize=14)
         plt.ylabel('Number of Matches', fontsize=14)
         plt.xticks(fontsize=12)
@@ -59,9 +69,10 @@ class MatchingVisualizer:
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         
         # Save if path provided
-        if save_path:
-            full_path = os.path.join(self.config['output_path'], save_path)
+        full_path = self._get_save_path(save_path)
+        if full_path:
             plt.savefig(full_path, dpi=self.config['dpi'], bbox_inches='tight')
+            print(f"📊 Gráfico salvo: {full_path}")
         
         plt.show()
     
@@ -87,16 +98,17 @@ class MatchingVisualizer:
         
         plt.xlabel('Similarity Score', fontsize=14)
         plt.ylabel('Density', fontsize=14)
-        plt.title('Distribution of Similarity Scores by Algorithm', fontsize=16)
+        plt.title(f'Distribution of Similarity Scores by Algorithm - {self.matching_type.title()}', fontsize=16)
         plt.legend(fontsize=12)
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.xticks(fontsize=12)
         plt.yticks(fontsize=12)
         
         # Save if path provided
-        if save_path:
-            full_path = os.path.join(self.config['output_path'], save_path)
+        full_path = self._get_save_path(save_path)
+        if full_path:
             plt.savefig(full_path, dpi=self.config['dpi'], bbox_inches='tight')
+            print(f"📊 Gráfico salvo: {full_path}")
         
         plt.show()
     
@@ -121,7 +133,7 @@ class MatchingVisualizer:
                         annot_kws={"size": 14}, fmt='.3f', linewidths=1, linecolor='white')
         
         # Set title and labels
-        plt.title('Agreement Between Matching Algorithms', fontsize=16)
+        plt.title(f'Agreement Between Matching Algorithms - {self.matching_type.title()}', fontsize=16)
         plt.xticks(fontsize=12, rotation=45, ha='right')
         plt.yticks(fontsize=12, rotation=0)
         
@@ -130,9 +142,10 @@ class MatchingVisualizer:
         cbar.ax.tick_params(labelsize=12)
         
         # Save if path provided
-        if save_path:
-            full_path = os.path.join(self.config['output_path'], save_path)
+        full_path = self._get_save_path(save_path)
+        if full_path:
             plt.savefig(full_path, dpi=self.config['dpi'], bbox_inches='tight')
+            print(f"📊 Gráfico salvo: {full_path}")
         
         plt.tight_layout()
         plt.show()
@@ -161,16 +174,17 @@ class MatchingVisualizer:
         
         plt.xlabel('Threshold', fontsize=14)
         plt.ylabel(metric.replace('_', ' ').title(), fontsize=14)
-        plt.title(f'Effect of Threshold on {metric.replace("_", " ").title()}', fontsize=16)
+        plt.title(f'Effect of Threshold on {metric.replace("_", " ").title()} - {self.matching_type.title()}', fontsize=16)
         plt.legend(fontsize=12)
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.xticks(fontsize=12)
         plt.yticks(fontsize=12)
         
         # Save if path provided
-        if save_path:
-            full_path = os.path.join(self.config['output_path'], save_path)
+        full_path = self._get_save_path(save_path)
+        if full_path:
             plt.savefig(full_path, dpi=self.config['dpi'], bbox_inches='tight')
+            print(f"📊 Gráfico salvo: {full_path}")
         
         plt.show()
     
@@ -210,7 +224,7 @@ class MatchingVisualizer:
         for container in ax.containers:
             ax.bar_label(container, fmt='%.3f', fontsize=10)
         
-        plt.title('Performance Metrics by Algorithm', fontsize=16)
+        plt.title(f'Performance Metrics by Algorithm - {self.matching_type.title()}', fontsize=16)
         plt.xlabel('Algorithm', fontsize=14)
         plt.ylabel('Score', fontsize=14)
         plt.xticks(fontsize=12)
@@ -219,9 +233,10 @@ class MatchingVisualizer:
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         
         # Save if path provided
-        if save_path:
-            full_path = os.path.join(self.config['output_path'], save_path)
+        full_path = self._get_save_path(save_path)
+        if full_path:
             plt.savefig(full_path, dpi=self.config['dpi'], bbox_inches='tight')
+            print(f"📊 Gráfico salvo: {full_path}")
         
         plt.show()
     
@@ -280,13 +295,15 @@ class MatchingVisualizer:
                 table[(0, i)].set_text_props(color='white', fontweight='bold')
             
             # Set title
-            plt.title(f'Top {n_examples} Matches using {algo_name.capitalize()}', fontsize=16, pad=20)
+            plt.title(f'Top {n_examples} Matches using {algo_name.capitalize()} - {self.matching_type.title()}', fontsize=16, pad=20)
             
             # Save if path provided
             if save_path:
                 algo_path = f"{algo_name}_{save_path}"
-                full_path = os.path.join(self.config['output_path'], algo_path)
-                plt.savefig(full_path, dpi=self.config['dpi'], bbox_inches='tight')
+                full_path = self._get_save_path(algo_path)
+                if full_path:
+                    plt.savefig(full_path, dpi=self.config['dpi'], bbox_inches='tight')
+                    print(f"📊 Gráfico salvo: {full_path}")
             
             plt.tight_layout()
             plt.show()
@@ -384,13 +401,14 @@ class MatchingVisualizer:
             plt.legend(handles=legend_elements, loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=len(legend_elements))
             
             # Set title and remove axis
-            plt.title('Comparative Matching Network', fontsize=16)
+            plt.title(f'Comparative Matching Network - {self.matching_type.title()}', fontsize=16)
             plt.axis('off')
             
             # Save if path provided
-            if save_path:
-                full_path = os.path.join(self.config['output_path'], save_path)
+            full_path = self._get_save_path(save_path)
+            if full_path:
                 plt.savefig(full_path, dpi=self.config['dpi'], bbox_inches='tight')
+                print(f"📊 Gráfico salvo: {full_path}")
             
             plt.tight_layout()
             plt.show()
