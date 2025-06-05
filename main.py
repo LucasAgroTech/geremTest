@@ -19,6 +19,61 @@ from evaluation import MatchingEvaluator
 from visualization import MatchingVisualizer
 from config import load_config
 
+# Excel limits
+EXCEL_MAX_ROWS = 1048576
+EXCEL_MAX_COLS = 16384
+
+def safe_save_results(df, file_path, logger, max_rows=500000):
+    """
+    Safely save results, using CSV for large datasets and Excel for smaller ones
+    
+    Args:
+        df: DataFrame to save
+        file_path: Base file path (without extension)
+        logger: Logger instance
+        max_rows: Maximum rows to include in saved file
+    
+    Returns:
+        str: Path of saved file
+    """
+    if df.empty:
+        logger.warning(f"Empty DataFrame, skipping save for {file_path}")
+        return None
+    
+    # Check if DataFrame is too large
+    rows, cols = df.shape
+    
+    # Limit rows if too many
+    if rows > max_rows:
+        logger.warning(f"Dataset has {rows:,} rows, limiting to top {max_rows:,} by similarity")
+        if 'similarity' in df.columns:
+            df = df.nlargest(max_rows, 'similarity')
+        else:
+            df = df.head(max_rows)
+        rows = len(df)
+    
+    # Choose file format based on size
+    if rows > EXCEL_MAX_ROWS or cols > EXCEL_MAX_COLS:
+        # Use CSV for large datasets
+        csv_path = file_path + '.csv'
+        df.to_csv(csv_path, index=False)
+        logger.info(f"Saved {rows:,} matches to CSV: {csv_path}")
+        return csv_path
+    else:
+        # Use Excel for smaller datasets
+        excel_path = file_path + '.xlsx'
+        try:
+            df.to_excel(excel_path, index=False)
+            logger.info(f"Saved {rows:,} matches to Excel: {excel_path}")
+            return excel_path
+        except Exception as e:
+            # Fallback to CSV if Excel fails
+            logger.warning(f"Excel save failed ({e}), falling back to CSV")
+            csv_path = file_path + '.csv'
+            df.to_csv(csv_path, index=False)
+            logger.info(f"Saved {rows:,} matches to CSV: {csv_path}")
+            return csv_path
+
 def setup_logging(config):
     """Set up logging based on configuration"""
     log_level = getattr(logging, config['logging']['level'].upper())
@@ -122,7 +177,7 @@ def run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, 
         logger.info(f"Found {len(levenshtein_results)} matches using Levenshtein")
         
         # Save matches to file
-        levenshtein_results.to_excel(os.path.join(results_dir, 'levenshtein_matches.xlsx'), index=False)
+        safe_save_results(levenshtein_results, os.path.join(results_dir, 'levenshtein_matches'), logger)
     
     # Run Jaro-Winkler matching if enabled
     if config['matching']['algorithms']['jaro_winkler']['enabled']:
@@ -137,7 +192,7 @@ def run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, 
         logger.info(f"Found {len(jaro_winkler_results)} matches using Jaro-Winkler")
         
         # Save matches to file
-        jaro_winkler_results.to_excel(os.path.join(results_dir, 'jaro_winkler_matches.xlsx'), index=False)
+        safe_save_results(jaro_winkler_results, os.path.join(results_dir, 'jaro_winkler_matches'), logger)
     
     # Run Embedding matching if enabled
     if config['matching']['algorithms']['embedding']['enabled']:
@@ -153,7 +208,7 @@ def run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, 
         logger.info(f"Found {len(embedding_results)} matches using Embeddings")
         
         # Save matches to file
-        embedding_results.to_excel(os.path.join(results_dir, 'embedding_matches.xlsx'), index=False)
+        safe_save_results(embedding_results, os.path.join(results_dir, 'embedding_matches'), logger)
     
     # Evaluate results
     logger.info("Evaluating matching results")
@@ -230,7 +285,7 @@ def run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, 
     
     # Save best matches to separate file
     if best_algo in results:
-        results[best_algo].to_excel(os.path.join(results_dir, 'best_matches.xlsx'), index=False)
+        safe_save_results(results[best_algo], os.path.join(results_dir, 'best_matches'), logger)
     
     # Save configuration used
     with open(os.path.join(results_dir, 'config.json'), 'w') as f:
@@ -322,7 +377,7 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, base_evaluator,
         logger.info(f"Found {len(levenshtein_results)} matches using Levenshtein")
         
         # Save matches to file
-        levenshtein_results.to_excel(os.path.join(results_dir, 'levenshtein_matches.xlsx'), index=False)
+        safe_save_results(levenshtein_results, os.path.join(results_dir, 'levenshtein_matches'), logger)
     
     # Run Jaro-Winkler matching if enabled
     if config['matching']['algorithms']['jaro_winkler']['enabled']:
@@ -337,7 +392,7 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, base_evaluator,
         logger.info(f"Found {len(jaro_winkler_results)} matches using Jaro-Winkler")
         
         # Save matches to file
-        jaro_winkler_results.to_excel(os.path.join(results_dir, 'jaro_winkler_matches.xlsx'), index=False)
+        safe_save_results(jaro_winkler_results, os.path.join(results_dir, 'jaro_winkler_matches'), logger)
     
     # Run Embedding matching if enabled
     if config['matching']['algorithms']['embedding']['enabled']:
@@ -353,7 +408,7 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, base_evaluator,
         logger.info(f"Found {len(embedding_results)} matches using Embeddings")
         
         # Save matches to file
-        embedding_results.to_excel(os.path.join(results_dir, 'embedding_matches.xlsx'), index=False)
+        safe_save_results(embedding_results, os.path.join(results_dir, 'embedding_matches'), logger)
     
     # Evaluate results
     logger.info("Evaluating matching results")
@@ -431,7 +486,7 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, base_evaluator,
         
         # Save best matches to separate file
         if best_algo in results:
-            results[best_algo].to_excel(os.path.join(results_dir, 'best_matches.xlsx'), index=False)
+            safe_save_results(results[best_algo], os.path.join(results_dir, 'best_matches'), logger)
     else:
         best_algo = 'N/A'
         logger.info("No matching algorithms produced results")
@@ -522,7 +577,7 @@ def run_gerem_projetos_matching(config, data_loader, matcher, base_evaluator, ba
         logger.info(f"Found {len(levenshtein_results)} matches using Levenshtein")
         
         # Save matches to file
-        levenshtein_results.to_excel(os.path.join(results_dir, 'levenshtein_matches.xlsx'), index=False)
+        safe_save_results(levenshtein_results, os.path.join(results_dir, 'levenshtein_matches'), logger)
     
     # Run Jaro-Winkler matching if enabled
     if config['matching']['algorithms']['jaro_winkler']['enabled']:
@@ -537,7 +592,7 @@ def run_gerem_projetos_matching(config, data_loader, matcher, base_evaluator, ba
         logger.info(f"Found {len(jaro_winkler_results)} matches using Jaro-Winkler")
         
         # Save matches to file
-        jaro_winkler_results.to_excel(os.path.join(results_dir, 'jaro_winkler_matches.xlsx'), index=False)
+        safe_save_results(jaro_winkler_results, os.path.join(results_dir, 'jaro_winkler_matches'), logger)
     
     # Run Embedding matching if enabled
     if config['matching']['algorithms']['embedding']['enabled']:
@@ -553,7 +608,7 @@ def run_gerem_projetos_matching(config, data_loader, matcher, base_evaluator, ba
         logger.info(f"Found {len(embedding_results)} matches using Embeddings")
         
         # Save matches to file
-        embedding_results.to_excel(os.path.join(results_dir, 'embedding_matches.xlsx'), index=False)
+        safe_save_results(embedding_results, os.path.join(results_dir, 'embedding_matches'), logger)
     
     # Evaluate results
     logger.info("Evaluating matching results")
@@ -624,7 +679,7 @@ def run_gerem_projetos_matching(config, data_loader, matcher, base_evaluator, ba
     
     # Save best matches to separate file
     if best_algo in results:
-        results[best_algo].to_excel(os.path.join(results_dir, 'best_matches.xlsx'), index=False)
+        safe_save_results(results[best_algo], os.path.join(results_dir, 'best_matches'), logger)
     
     # Save configuration used
     with open(os.path.join(results_dir, 'config.json'), 'w') as f:

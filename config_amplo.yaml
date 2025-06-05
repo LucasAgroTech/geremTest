@@ -1,0 +1,77 @@
+# Configuração para matching MAIS AMPLO (60% de similaridade)
+sharepoint:
+  site: https://embrapii.sharepoint.com/sites/GEPES
+  data_path:
+    gerem_interacoes: General/Lucas Pinheiro/scriptGerem/apuracao_resultados_2024.xlsx
+    prospeccoes: DWPII/srinfo/prospeccao_prospeccao.xlsx
+    negociacoes: DWPII/srinfo/negociacoes_empresas.xlsx
+    projetos: DWPII/srinfo/portfolio.xlsx
+
+local_paths:
+  data: data
+  temp: temp
+  results: results
+  logs: logs
+  evaluation: evaluation
+  visualization: visualization
+
+matching:
+  column_mapping:
+    gerem:
+      id: id_prospeccao
+      empresa: nome_empresa
+      nome_capital: nome_empresa
+      data: data_prospeccao
+    prospeccoes:
+      id: id_prospeccao
+      empresa: nome_empresa
+      data: data_prospeccao
+      cnpj: cnpj_empresa
+      unidade: unidade_embrapii
+    negociacoes:
+      id: codigo_negociacao
+      empresa: razao_social
+      cnpj: cnpj
+      data: data_prim_ver_prop_tec
+      unidade: unidade_embrapii
+    projetos:
+      id: codigo_projeto
+      empresa: info_empresa
+      data: data_inicio
+      unidade: unidade_embrapii
+  
+  # 🎯 ALGORITMOS AJUSTADOS - Thresholds mais equilibrados
+  algorithms:
+    levenshtein:
+      enabled: true
+      threshold: 0.6  # 60% - bom para Levenshtein
+    jaro_winkler:
+      enabled: true
+      threshold: 0.75  # 75% - Jaro-Winkler precisa ser mais restritivo
+    embedding:
+      enabled: true
+      threshold: 0.6  # 60% - mantém igual
+      model: paraphrase-multilingual-MiniLM-L12-v2
+  
+  # 📊 FAIXAS DE TESTE MAIS GRANULARES
+  threshold_test:
+    levenshtein: [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8]
+    jaro_winkler: [0.7, 0.75, 0.8, 0.85, 0.9, 0.95]  # Faixas mais altas para Jaro-Winkler
+    embedding: [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8]
+
+evaluation:
+  metrics: [precision, recall, f1, agreement]
+  generate_visualizations: true
+  save_detailed_results: true
+  best_algorithm_criteria: match_count
+  run_threshold_comparison: false  # Para testar múltiplos thresholds
+
+visualization:
+  figsize: [12, 8]
+  palette: viridis
+  dpi: 300
+
+logging:
+  level: INFO
+  file: matching.log
+  console: true

@@ -25,6 +25,14 @@ from datetime import datetime
 import json
 from pathlib import Path
 
+# Tentar importar utilitários de diagnóstico
+try:
+    from chain_analysis_utils import generate_diagnostic_report, display_diagnostic_report
+    DIAGNOSTICS_AVAILABLE = True
+except ImportError:
+    DIAGNOSTICS_AVAILABLE = False
+    st.warning("⚠️ Módulo de diagnóstico não disponível. Algumas funcionalidades avançadas podem não funcionar.")
+
 class ChainAnalyzer:
     def __init__(self):
         """Inicializa o analisador de cadeia de conversão"""
@@ -53,29 +61,109 @@ class ChainAnalyzer:
             latest_folder = sorted(folders)[-1]
             folder_path = os.path.join(type_path, latest_folder)
             
+            st.info(f"📂 Carregando de: {folder_path}")
+            
             # Carregar os arquivos de matches
             algorithms = ['levenshtein', 'jaro_winkler', 'embedding']
             results[match_type] = {}
             
             for algo in algorithms:
-                file_path = os.path.join(folder_path, f'{algo}_matches.xlsx')
-                if os.path.exists(file_path):
-                    try:
-                        df = pd.read_excel(file_path)
-                        results[match_type][algo] = df
-                        st.success(f"✅ Carregado: {match_type}/{algo} - {len(df)} matches")
-                    except Exception as e:
-                        st.error(f"Erro ao carregar {file_path}: {e}")
-        
+                # Procurar diferentes possíveis nomes de arquivo
+                possible_files = [
+                    f'{algo}_matches.xlsx',
+                    f'{algo}_matches.csv',
+                    f'{algo}.xlsx',
+                    f'{algo}.csv'
+                ]
+                
+                file_loaded = False
+                for file_name in possible_files:
+                    file_path = os.path.join(folder_path, file_name)
+                    if os.path.exists(file_path):
+                        try:
+                            if file_name.endswith('.xlsx'):
+                                df = pd.read_excel(file_path)
+                            else:
+                                df = pd.read_csv(file_path)
+                            
+                            # Verificar se as colunas essenciais existem
+                            required_cols = ['similarity', 'source_id', 'target_id']
+                            missing_cols = [col for col in required_cols if col not in df.columns]
+                            
+                            if missing_cols:
+                                st.error(f"❌ Arquivo {file_path} está faltando colunas: {missing_cols}")
+                                st.write(f"Colunas disponíveis: {list(df.columns)}")
+                                continue
+                            
+                            # Verificar se há dados válidos de similaridade
+                            valid_similarities = df['similarity'].notna().sum()
+                            if valid_similarities == 0:
+                                st.warning(f"⚠️ Arquivo {file_path} não possui valores válidos de similaridade")
+                                continue
+                            
+                            # Mostrar estatísticas dos dados carregados
+                            min_sim = df['similarity'].min()
+                            max_sim = df['similarity'].max()
+                            mean_sim = df['similarity'].mean()
+                            
+                            results[match_type][algo] = df
+                            st.success(f"✅ Carregado: {match_type}/{algo} - {len(df)} matches")
+                            st.write(f"   📊 Similaridade: min={min_sim:.3f}, max={max_sim:.3f}, média={mean_sim:.3f}")
+                            
+                            file_loaded = True
+                            break
+                            
+                        except Exception as e:
+                            st.error(f"❌ Erro ao carregar {file_path}: {e}")
+                
+                if not file_loaded:
+                    st.warning(f"⚠️ Nenhum arquivo encontrado para {match_type}/{algo}")
+                    st.write(f"   Procurados: {possible_files}")
+                    
         return results
     
-    def filter_by_similarity(self, df, threshold):
-        """Filtra matches por threshold de similaridade"""
+    def filter_by_similarity(self, df, threshold, debug=False):
+        """Filtra matches por threshold de similaridade com debugging melhorado"""
         if df.empty:
+            if debug:
+                st.write("DataFrame vazio - nenhum filtro aplicado")
             return df
-        return df[df['similarity'] >= threshold].copy()
+        
+        # Verificar se a coluna similarity existe
+        if 'similarity' not in df.columns:
+            st.error(f"❌ Coluna 'similarity' não encontrada no DataFrame. Colunas disponíveis: {list(df.columns)}")
+            return pd.DataFrame()
+        
+        # Aplicar filtro
+        filtered_df = df[df['similarity'] >= threshold].copy()
+        
+        # Log do resultado do filtro apenas se debug ativado
+        if debug:
+            original_count = len(df)
+            filtered_count = len(filtered_df)
+            percentage_kept = (filtered_count / original_count * 100) if original_count > 0 else 0
+            
+            similarity_stats = {
+                'min': df['similarity'].min(),
+                'max': df['similarity'].max(),
+                'mean': df['similarity'].mean(),
+                'std': df['similarity'].std()
+            }
+            
+            st.write(f"🔍 **Filtro aplicado:**")
+            st.write(f"   - Threshold: ≥ {threshold:.3f}")
+            st.write(f"   - Registros originais: {original_count:,}")
+            st.write(f"   - Registros após filtro: {filtered_count:,}")
+            st.write(f"   - Percentual mantido: {percentage_kept:.1f}%")
+            st.write(f"   - Similaridade: min={similarity_stats['min']:.3f}, max={similarity_stats['max']:.3f}, média={similarity_stats['mean']:.3f}")
+            
+            if filtered_count == 0:
+                st.warning(f"⚠️ Nenhum registro passou pelo filtro de similaridade (threshold={threshold:.3f})")
+                st.write(f"   💡 Sugestão: Reduza o threshold para valores abaixo de {similarity_stats['max']:.3f}")
+        
+        return filtered_df
     
-    def analyze_conversion_chain(self, results, thresholds, algorithms):
+    def analyze_conversion_chain(self, results, thresholds, algorithms, debug=False):
         """
         Analisa a cadeia completa de conversão aplicando os thresholds configurados
         
@@ -83,10 +171,20 @@ class ChainAnalyzer:
             results: Dicionário com resultados de matching
             thresholds: Dicionário com thresholds para cada tipo
             algorithms: Dicionário com algoritmos selecionados para cada tipo
+            debug: Se True, mostra logs detalhados do processo
         
         Returns:
             Dicionário com análise da cadeia de conversão
         """
+        # Container para logs de debug
+        debug_container = None
+        if debug:
+            debug_container = st.expander("🔍 Logs Detalhados da Análise", expanded=True)
+            with debug_container:
+                st.write("🔄 **Iniciando análise da cadeia de conversão...**")
+                st.write(f"📋 Thresholds configurados: {thresholds}")
+                st.write(f"🤖 Algoritmos selecionados: {algorithms}")
+        
         analysis = {
             'total_interactions': 0,
             'conversions': {
@@ -100,50 +198,141 @@ class ChainAnalyzer:
             }
         }
         
+        # Verificar estrutura dos dados carregados
+        if debug and debug_container:
+            with debug_container:
+                st.write("📊 **Verificando dados disponíveis:**")
+                for match_type, data in results.items():
+                    st.write(f"   - {match_type}: {list(data.keys()) if data else 'Sem dados'}")
+        
         # 1. GEREM → Prospecções
+        if debug and debug_container:
+            with debug_container:
+                st.write("\n🎯 **Processando GEREM → Prospecções**")
+        
         if 'gerem_prospecoes' in results and algorithms['prospecoes'] in results['gerem_prospecoes']:
             prosp_matches = results['gerem_prospecoes'][algorithms['prospecoes']]
-            prosp_filtered = self.filter_by_similarity(prosp_matches, thresholds['prospecoes'])
             
-            analysis['conversions']['to_prospections']['count'] = len(prosp_filtered)
-            analysis['conversions']['to_prospections']['matches'] = prosp_filtered.to_dict('records')
-            analysis['conversions']['to_prospections']['confidence'] = prosp_filtered['similarity'].mean() if not prosp_filtered.empty else 0
+            if debug and debug_container:
+                with debug_container:
+                    st.write(f"   📥 Dados carregados: {len(prosp_matches)} registros")
             
-            # IDs únicos de interações GEREM que geraram prospecções
-            gerem_to_prosp_ids = set(prosp_filtered['source_id'].unique())
+            if not prosp_matches.empty:
+                if debug and debug_container:
+                    with debug_container:
+                        st.write(f"   🔧 Aplicando filtro de similaridade...")
+                
+                prosp_filtered = self.filter_by_similarity(prosp_matches, thresholds['prospecoes'], debug)
+                
+                analysis['conversions']['to_prospections']['count'] = len(prosp_filtered)
+                analysis['conversions']['to_prospections']['matches'] = prosp_filtered.to_dict('records')
+                analysis['conversions']['to_prospections']['confidence'] = prosp_filtered['similarity'].mean() if not prosp_filtered.empty else 0
+                
+                # IDs únicos de interações GEREM que geraram prospecções
+                gerem_to_prosp_ids = set(prosp_filtered['source_id'].unique())
+                
+                if debug and debug_container:
+                    with debug_container:
+                        st.write(f"   ✅ Resultado: {len(prosp_filtered)} matches, {len(gerem_to_prosp_ids)} IDs únicos")
+            else:
+                if debug and debug_container:
+                    with debug_container:
+                        st.warning("   ⚠️ Nenhum dado disponível para prospecções")
+                gerem_to_prosp_ids = set()
         else:
+            missing_key = 'gerem_prospecoes' if 'gerem_prospecoes' not in results else algorithms['prospecoes']
+            if debug and debug_container:
+                with debug_container:
+                    st.warning(f"   ⚠️ Dados não encontrados: {missing_key}")
             gerem_to_prosp_ids = set()
         
         # 2. GEREM → Negociações
+        if debug and debug_container:
+            with debug_container:
+                st.write("\n🤝 **Processando GEREM → Negociações**")
+        
         if 'gerem_negociacoes' in results and algorithms['negociacoes'] in results['gerem_negociacoes']:
             neg_matches = results['gerem_negociacoes'][algorithms['negociacoes']]
-            neg_filtered = self.filter_by_similarity(neg_matches, thresholds['negociacoes'])
             
-            analysis['conversions']['to_negotiations']['count'] = len(neg_filtered)
-            analysis['conversions']['to_negotiations']['matches'] = neg_filtered.to_dict('records')
-            analysis['conversions']['to_negotiations']['confidence'] = neg_filtered['similarity'].mean() if not neg_filtered.empty else 0
+            if debug and debug_container:
+                with debug_container:
+                    st.write(f"   📥 Dados carregados: {len(neg_matches)} registros")
             
-            # IDs únicos de interações GEREM que geraram negociações
-            gerem_to_neg_ids = set(neg_filtered['source_id'].unique())
+            if not neg_matches.empty:
+                if debug and debug_container:
+                    with debug_container:
+                        st.write(f"   🔧 Aplicando filtro de similaridade...")
+                
+                neg_filtered = self.filter_by_similarity(neg_matches, thresholds['negociacoes'], debug)
+                
+                analysis['conversions']['to_negotiations']['count'] = len(neg_filtered)
+                analysis['conversions']['to_negotiations']['matches'] = neg_filtered.to_dict('records')
+                analysis['conversions']['to_negotiations']['confidence'] = neg_filtered['similarity'].mean() if not neg_filtered.empty else 0
+                
+                # IDs únicos de interações GEREM que geraram negociações
+                gerem_to_neg_ids = set(neg_filtered['source_id'].unique())
+                
+                if debug and debug_container:
+                    with debug_container:
+                        st.write(f"   ✅ Resultado: {len(neg_filtered)} matches, {len(gerem_to_neg_ids)} IDs únicos")
+            else:
+                if debug and debug_container:
+                    with debug_container:
+                        st.warning("   ⚠️ Nenhum dado disponível para negociações")
+                gerem_to_neg_ids = set()
         else:
+            missing_key = 'gerem_negociacoes' if 'gerem_negociacoes' not in results else algorithms['negociacoes']
+            if debug and debug_container:
+                with debug_container:
+                    st.warning(f"   ⚠️ Dados não encontrados: {missing_key}")
             gerem_to_neg_ids = set()
         
         # 3. GEREM → Projetos
+        if debug and debug_container:
+            with debug_container:
+                st.write("\n🚀 **Processando GEREM → Projetos**")
+        
         if 'gerem_projetos' in results and algorithms['projetos'] in results['gerem_projetos']:
             proj_matches = results['gerem_projetos'][algorithms['projetos']]
-            proj_filtered = self.filter_by_similarity(proj_matches, thresholds['projetos'])
             
-            analysis['conversions']['to_projects']['count'] = len(proj_filtered)
-            analysis['conversions']['to_projects']['matches'] = proj_filtered.to_dict('records')
-            analysis['conversions']['to_projects']['confidence'] = proj_filtered['similarity'].mean() if not proj_filtered.empty else 0
+            if debug and debug_container:
+                with debug_container:
+                    st.write(f"   📥 Dados carregados: {len(proj_matches)} registros")
             
-            # IDs únicos de interações GEREM que geraram projetos
-            gerem_to_proj_ids = set(proj_filtered['source_id'].unique())
+            if not proj_matches.empty:
+                if debug and debug_container:
+                    with debug_container:
+                        st.write(f"   🔧 Aplicando filtro de similaridade...")
+                
+                proj_filtered = self.filter_by_similarity(proj_matches, thresholds['projetos'], debug)
+                
+                analysis['conversions']['to_projects']['count'] = len(proj_filtered)
+                analysis['conversions']['to_projects']['matches'] = proj_filtered.to_dict('records')
+                analysis['conversions']['to_projects']['confidence'] = proj_filtered['similarity'].mean() if not proj_filtered.empty else 0
+                
+                # IDs únicos de interações GEREM que geraram projetos
+                gerem_to_proj_ids = set(proj_filtered['source_id'].unique())
+                
+                if debug and debug_container:
+                    with debug_container:
+                        st.write(f"   ✅ Resultado: {len(proj_filtered)} matches, {len(gerem_to_proj_ids)} IDs únicos")
+            else:
+                if debug and debug_container:
+                    with debug_container:
+                        st.warning("   ⚠️ Nenhum dado disponível para projetos")
+                gerem_to_proj_ids = set()
         else:
+            missing_key = 'gerem_projetos' if 'gerem_projetos' not in results else algorithms['projetos']
+            if debug and debug_container:
+                with debug_container:
+                    st.warning(f"   ⚠️ Dados não encontrados: {missing_key}")
             gerem_to_proj_ids = set()
         
         # 4. Análise da cadeia completa
-        # Interações que percorreram toda a cadeia: Prospecção → Negociação → Projeto
+        if debug and debug_container:
+            with debug_container:
+                st.write("\n🔗 **Analisando cadeia completa**")
+        
         full_chain_ids = gerem_to_prosp_ids.intersection(gerem_to_neg_ids).intersection(gerem_to_proj_ids)
         
         # Total de interações GEREM únicas
@@ -179,6 +368,16 @@ class ChainAnalyzer:
             'percentage': (len(full_chain_ids) / total_unique_gerem * 100) if total_unique_gerem > 0 else 0,
             'ids': list(full_chain_ids)
         }
+        
+        # Resumo final
+        if debug and debug_container:
+            with debug_container:
+                st.write("\n📈 **Resumo da análise:**")
+                st.write(f"   - Total de interações: {analysis['total_interactions']:,}")
+                st.write(f"   - Prospecções: {analysis['conversions']['to_prospections']['count']:,}")
+                st.write(f"   - Negociações: {analysis['conversions']['to_negotiations']['count']:,}")
+                st.write(f"   - Projetos: {analysis['conversions']['to_projects']['count']:,}")
+                st.write(f"   - Cadeia completa: {analysis['chain_analysis']['full_chain']['count']:,}")
         
         return analysis
     
@@ -310,10 +509,18 @@ def main():
         help="Atualiza automaticamente quando os filtros mudarem"
     )
     
+    # Opção de logs detalhados
+    show_debug_logs = st.sidebar.checkbox(
+        "🔍 Mostrar Logs Detalhados", 
+        value=False,
+        help="Exibe logs detalhados do processo de análise"
+    )
+    
     # Verificar se os parâmetros mudaram
     current_params = {
         'thresholds': thresholds,
-        'algorithms': algorithms
+        'algorithms': algorithms,
+        'show_debug_logs': show_debug_logs
     }
     
     params_changed = False
@@ -327,12 +534,29 @@ def main():
     # Botão para executar análise manual
     manual_run = st.sidebar.button("🚀 Executar Análise")
     
+    # Seção de diagnóstico
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🔍 Diagnóstico")
+    
+    if DIAGNOSTICS_AVAILABLE:
+        if st.sidebar.button("🩺 Executar Diagnóstico Completo"):
+            with st.spinner("Executando diagnóstico..."):
+                diagnostic_report = generate_diagnostic_report(results, thresholds, algorithms)
+                st.session_state.diagnostic_report = diagnostic_report
+                st.sidebar.success("✅ Diagnóstico concluído!")
+        
+        if 'diagnostic_report' in st.session_state:
+            if st.sidebar.button("📋 Mostrar Relatório de Diagnóstico"):
+                st.session_state.show_diagnostic = True
+    else:
+        st.sidebar.info("Diagnóstico não disponível")
+    
     # Executar análise se: botão foi clicado OU (atualização automática está ativa E parâmetros mudaram)
     should_run_analysis = manual_run or (auto_update and params_changed)
     
     if should_run_analysis and 'results' in st.session_state:
         with st.spinner("Analisando cadeia de conversão..."):
-            analysis = analyzer.analyze_conversion_chain(results, thresholds, algorithms)
+            analysis = analyzer.analyze_conversion_chain(results, thresholds, algorithms, show_debug_logs)
             st.session_state.analysis = analysis
             
             # Mostrar indicador de atualização
@@ -375,6 +599,84 @@ def main():
             st.write(f"Algoritmo: {algorithms['projetos'].title()}")
             st.write(f"Threshold: ≥{thresholds['projetos']:.2f}")
             st.write(f"Matches: {analysis['conversions']['to_projects']['count']:,}")
+    
+    # Seção de debugging para verificar dados carregados
+    with st.expander("🔍 Debug: Dados Carregados e Filtros", expanded=False):
+        st.write("### Estrutura dos Dados Carregados")
+        
+        for match_type, data in results.items():
+            st.write(f"**{match_type.upper()}:**")
+            if data:
+                for algo, df in data.items():
+                    if not df.empty:
+                        st.write(f"   - {algo}: {len(df):,} registros")
+                        
+                        # Mostrar estatísticas de similaridade
+                        if 'similarity' in df.columns:
+                            sim_stats = {
+                                'min': df['similarity'].min(),
+                                'max': df['similarity'].max(),
+                                'mean': df['similarity'].mean(),
+                                'median': df['similarity'].median()
+                            }
+                            st.write(f"     📊 Similaridade: min={sim_stats['min']:.3f}, max={sim_stats['max']:.3f}, média={sim_stats['mean']:.3f}")
+                            
+                            # Mostrar quantos registros passariam pelos thresholds atuais
+                            threshold_key = match_type.split('_')[1]  # prospecoes, negociacoes, projetos
+                            if threshold_key in thresholds:
+                                current_threshold = thresholds[threshold_key]
+                                would_pass = len(df[df['similarity'] >= current_threshold])
+                                percentage = (would_pass / len(df) * 100) if len(df) > 0 else 0
+                                st.write(f"     🎯 Com threshold {current_threshold:.2f}: {would_pass:,} registros ({percentage:.1f}%)")
+                        else:
+                            st.error(f"     ❌ Coluna 'similarity' não encontrada!")
+                    else:
+                        st.write(f"   - {algo}: DataFrame vazio")
+            else:
+                st.write("   - Nenhum dado disponível")
+        
+        st.write("### Verificação dos Filtros")
+        st.write("Os filtros estão sendo aplicados corretamente se:")
+        st.write("- ✅ Os arquivos foram carregados com sucesso")
+        st.write("- ✅ A coluna 'similarity' existe em todos os DataFrames")
+        st.write("- ✅ Os thresholds estão dentro do range de similaridades disponíveis")
+        st.write("- ✅ O número de matches após filtro diminui quando o threshold aumenta")
+        
+        # Teste rápido dos filtros
+        st.write("### Teste Rápido dos Filtros")
+        test_type = st.selectbox("Selecione tipo para testar:", ['gerem_prospecoes', 'gerem_negociacoes', 'gerem_projetos'])
+        test_algo = st.selectbox("Selecione algoritmo para testar:", ['levenshtein', 'jaro_winkler', 'embedding'])
+        
+        if test_type in results and test_algo in results[test_type]:
+            test_df = results[test_type][test_algo]
+            if not test_df.empty and 'similarity' in test_df.columns:
+                test_threshold = st.slider("Threshold de teste:", 0.0, 1.0, 0.5, 0.05)
+                
+                original_count = len(test_df)
+                filtered_count = len(test_df[test_df['similarity'] >= test_threshold])
+                
+                st.write(f"**Resultado do teste:**")
+                st.write(f"- Registros originais: {original_count:,}")
+                st.write(f"- Registros após filtro (≥{test_threshold:.2f}): {filtered_count:,}")
+                st.write(f"- Percentual mantido: {(filtered_count/original_count*100):.1f}%")
+                
+                if filtered_count == 0:
+                    max_sim = test_df['similarity'].max()
+                    st.warning(f"⚠️ Nenhum registro passou. Similaridade máxima disponível: {max_sim:.3f}")
+            else:
+                st.error("❌ Dados não disponíveis ou coluna 'similarity' não encontrada")
+    
+    # Mostrar relatório de diagnóstico se solicitado
+    if 'show_diagnostic' in st.session_state and st.session_state.show_diagnostic:
+        if 'diagnostic_report' in st.session_state and DIAGNOSTICS_AVAILABLE:
+            display_diagnostic_report(st.session_state.diagnostic_report)
+            
+            # Botão para ocultar o relatório
+            if st.button("❌ Ocultar Relatório de Diagnóstico"):
+                st.session_state.show_diagnostic = False
+                st.rerun()
+            
+            st.markdown("---")
     
     # Métricas principais
     st.header("📈 Métricas Principais")

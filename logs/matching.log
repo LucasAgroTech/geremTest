@@ -648,3 +648,243 @@ KeyError: 'data_prim_ver_prop_tec'
 2025-06-03 11:18:51,785 - matching - INFO - GEREM to Negotiations matching completed. Results in results/gerem_negociacoes/20250603_110706
 2025-06-03 11:18:51,786 - matching - INFO - Best algorithm: levenshtein
 2025-06-03 11:18:51,786 - matching - INFO - All matching completed successfully
+2025-06-04 08:56:32,326 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-04 08:56:32,326 - matching - INFO - Initializing data loader
+2025-06-04 08:56:38,623 - matching - INFO - Initializing matching algorithms
+2025-06-04 08:56:38,623 - matching - INFO - Initializing evaluator
+2025-06-04 08:56:38,623 - matching - INFO - Initializing visualizer
+2025-06-04 08:56:38,623 - matching - INFO - Running GEREM to Prospections matching
+2025-06-04 08:56:38,623 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-04 08:56:38,623 - matching - INFO - Loading GEREM interactions data
+2025-06-04 08:56:39,286 - matching - INFO - Loaded 2344 GEREM interactions
+2025-06-04 08:56:39,286 - matching - INFO - Loading prospections data
+2025-06-04 08:56:41,761 - matching - INFO - Loaded 32487 prospections
+2025-06-04 08:56:45,824 - matching - INFO - Running Levenshtein matching
+2025-06-04 08:56:45,833 - matching - ERROR - Error running matching: 'empresa_nome_capital'
+2025-06-04 08:56:45,837 - matching - ERROR - Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3805, in get_loc
+    return self._engine.get_loc(casted_key)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
+  File "index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7081, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7089, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'empresa_nome_capital'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 728, in main
+    prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger)
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 117, in run_gerem_prospecoes_matching
+    levenshtein_results = matcher.levenshtein_matching(
+        gerem_df, prospecoes_df, source_col, target_col, date_cols
+    )
+  File "/Users/lucaspinheiro/Desktop/geremTest/matching_algorithms.py", line 85, in levenshtein_matching
+    source_df['normalized_text'] = source_df[source_col].apply(self.preprocess_text)
+                                   ~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/frame.py", line 4102, in __getitem__
+    indexer = self.columns.get_loc(key)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
+    raise KeyError(key) from err
+KeyError: 'empresa_nome_capital'
+
+2025-06-04 08:59:20,523 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-04 08:59:20,523 - matching - INFO - Initializing data loader
+2025-06-04 08:59:24,896 - matching - INFO - Initializing matching algorithms
+2025-06-04 08:59:24,896 - matching - INFO - Initializing evaluator
+2025-06-04 08:59:24,896 - matching - INFO - Initializing visualizer
+2025-06-04 08:59:24,896 - matching - INFO - Running GEREM to Prospections matching
+2025-06-04 08:59:24,896 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-04 08:59:24,896 - matching - INFO - Loading GEREM interactions data
+2025-06-04 08:59:25,284 - matching - INFO - Loaded 2344 GEREM interactions
+2025-06-04 08:59:25,284 - matching - INFO - Loading prospections data
+2025-06-04 08:59:27,412 - matching - INFO - Loaded 32487 prospections
+2025-06-04 08:59:31,459 - matching - INFO - Running Levenshtein matching
+2025-06-04 09:01:25,798 - matching - INFO - Found 6250 matches using Levenshtein
+2025-06-04 09:01:26,169 - matching - INFO - Running Jaro-Winkler matching
+2025-06-04 09:03:42,385 - matching - INFO - Found 1288998 matches using Jaro-Winkler
+2025-06-04 09:03:42,387 - matching - ERROR - Error running matching: This sheet is too large! Your sheet size is: 1288998, 6 Max sheet size is: 1048576, 16384
+2025-06-04 09:03:42,395 - matching - ERROR - Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 728, in main
+    prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger)
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 140, in run_gerem_prospecoes_matching
+    jaro_winkler_results.to_excel(os.path.join(results_dir, 'jaro_winkler_matches.xlsx'), index=False)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/util/_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/generic.py", line 2417, in to_excel
+    formatter.write(
+    ~~~~~~~~~~~~~~~^
+        excel_writer,
+        ^^^^^^^^^^^^^
+    ...<6 lines>...
+        engine_kwargs=engine_kwargs,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/io/formats/excel.py", line 931, in write
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: This sheet is too large! Your sheet size is: 1288998, 6 Max sheet size is: 1048576, 16384
+
+2025-06-04 09:06:52,467 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-04 09:06:52,467 - matching - INFO - Initializing data loader
+2025-06-04 09:06:56,145 - matching - INFO - Initializing matching algorithms
+2025-06-04 09:06:56,146 - matching - INFO - Initializing evaluator
+2025-06-04 09:06:56,146 - matching - INFO - Initializing visualizer
+2025-06-04 09:06:56,146 - matching - INFO - Running GEREM to Prospections matching
+2025-06-04 09:06:56,146 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-04 09:06:56,146 - matching - INFO - Loading GEREM interactions data
+2025-06-04 09:06:56,528 - matching - INFO - Loaded 2344 GEREM interactions
+2025-06-04 09:06:56,528 - matching - INFO - Loading prospections data
+2025-06-04 09:06:58,616 - matching - INFO - Loaded 32487 prospections
+2025-06-04 09:07:02,735 - matching - INFO - Running Levenshtein matching
+2025-06-04 09:09:00,245 - matching - INFO - Found 6250 matches using Levenshtein
+2025-06-04 09:09:00,643 - matching - INFO - Saved 6,250 matches to Excel: results/gerem_prospecoes/20250604_090656/levenshtein_matches.xlsx
+2025-06-04 09:09:00,643 - matching - INFO - Running Jaro-Winkler matching
+2025-06-04 09:11:12,657 - matching - INFO - Found 11831 matches using Jaro-Winkler
+2025-06-04 09:11:13,209 - matching - INFO - Saved 11,831 matches to Excel: results/gerem_prospecoes/20250604_090656/jaro_winkler_matches.xlsx
+2025-06-04 09:11:13,209 - matching - INFO - Running Embedding matching
+2025-06-04 09:38:30,155 - matching - INFO - Found 243965 matches using Embeddings
+2025-06-04 09:38:43,193 - matching - INFO - Saved 243,965 matches to Excel: results/gerem_prospecoes/20250604_090656/embedding_matches.xlsx
+2025-06-04 09:38:43,194 - matching - INFO - Evaluating matching results
+2025-06-04 09:38:56,214 - matching - INFO - Generating visualizations for prospections
+2025-06-04 09:39:49,313 - matching - INFO - Running threshold comparison
+2025-06-04 09:44:41,968 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-04 09:44:41,969 - matching - INFO - Initializing data loader
+2025-06-04 09:44:45,434 - matching - INFO - Initializing matching algorithms
+2025-06-04 09:44:45,434 - matching - INFO - Initializing evaluator
+2025-06-04 09:44:45,434 - matching - INFO - Initializing visualizer
+2025-06-04 09:44:45,434 - matching - INFO - Running GEREM to Prospections matching
+2025-06-04 09:44:45,435 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-04 09:44:45,435 - matching - INFO - Loading GEREM interactions data
+2025-06-04 09:44:45,821 - matching - INFO - Loaded 2344 GEREM interactions
+2025-06-04 09:44:45,822 - matching - INFO - Loading prospections data
+2025-06-04 09:44:48,155 - matching - INFO - Loaded 32508 prospections
+2025-06-04 09:44:52,117 - matching - INFO - Running Levenshtein matching
+2025-06-04 09:46:55,786 - matching - INFO - Found 6281 matches using Levenshtein
+2025-06-04 09:46:56,081 - matching - INFO - Saved 6,281 matches to Excel: results/gerem_prospecoes/20250604_094445/levenshtein_matches.xlsx
+2025-06-04 09:46:56,081 - matching - INFO - Running Jaro-Winkler matching
+2025-06-04 09:49:12,725 - matching - INFO - Found 11918 matches using Jaro-Winkler
+2025-06-04 09:49:13,298 - matching - INFO - Saved 11,918 matches to Excel: results/gerem_prospecoes/20250604_094445/jaro_winkler_matches.xlsx
+2025-06-04 09:49:13,298 - matching - INFO - Running Embedding matching
+2025-06-04 10:18:07,652 - matching - INFO - Found 245827 matches using Embeddings
+2025-06-04 10:18:21,520 - matching - INFO - Saved 245,827 matches to Excel: results/gerem_prospecoes/20250604_094445/embedding_matches.xlsx
+2025-06-04 10:18:21,520 - matching - INFO - Evaluating matching results
+2025-06-04 10:18:36,607 - matching - INFO - Generating visualizations for prospections
+2025-06-04 10:18:51,787 - matching - INFO - Skipping threshold comparison (disabled in config)
+2025-06-04 10:18:51,790 - matching - INFO - Best algorithm based on match_count: embedding
+2025-06-04 10:19:10,994 - matching - INFO - Saved 245,827 matches to Excel: results/gerem_prospecoes/20250604_094445/best_matches.xlsx
+2025-06-04 10:19:11,026 - matching - INFO - GEREM to Prospections matching completed. Results in results/gerem_prospecoes/20250604_094445
+2025-06-04 10:19:11,026 - matching - INFO - Best algorithm: embedding
+2025-06-04 10:19:11,026 - matching - INFO - All matching completed successfully
+2025-06-04 11:03:32,494 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-04 11:03:32,494 - matching - INFO - Initializing data loader
+2025-06-04 11:03:37,943 - matching - INFO - Initializing matching algorithms
+2025-06-04 11:03:37,943 - matching - INFO - Initializing evaluator
+2025-06-04 11:03:37,943 - matching - INFO - Initializing visualizer
+2025-06-04 11:03:37,943 - matching - INFO - Running GEREM to Negotiations matching
+2025-06-04 11:03:37,944 - matching - INFO - Starting GEREM to Negotiations matching
+2025-06-04 11:03:37,945 - matching - INFO - Loading GEREM interactions data
+2025-06-04 11:03:38,466 - matching - INFO - Loaded 2344 GEREM interactions
+2025-06-04 11:03:38,466 - matching - INFO - Loading and consolidating negotiations data
+2025-06-04 11:03:42,909 - matching - INFO - Loaded and consolidated 10243 negotiations
+2025-06-04 11:03:43,407 - matching - INFO - Running Levenshtein matching
+2025-06-04 11:04:34,452 - matching - INFO - Found 2497 matches using Levenshtein
+2025-06-04 11:04:34,575 - matching - INFO - Saved 2,497 matches to Excel: results/gerem_negociacoes/20250604_110337/levenshtein_matches.xlsx
+2025-06-04 11:04:34,575 - matching - INFO - Running Jaro-Winkler matching
+2025-06-04 11:05:31,095 - matching - INFO - Found 4824 matches using Jaro-Winkler
+2025-06-04 11:05:31,328 - matching - INFO - Saved 4,824 matches to Excel: results/gerem_negociacoes/20250604_110337/jaro_winkler_matches.xlsx
+2025-06-04 11:05:31,328 - matching - INFO - Running Embedding matching
+2025-06-04 11:14:16,055 - matching - INFO - Found 92685 matches using Embeddings
+2025-06-04 11:14:21,297 - matching - INFO - Saved 92,685 matches to Excel: results/gerem_negociacoes/20250604_110337/embedding_matches.xlsx
+2025-06-04 11:14:21,297 - matching - INFO - Evaluating matching results
+2025-06-04 11:14:26,532 - matching - INFO - Generating visualizations for negotiations
+2025-06-04 11:14:53,405 - matching - INFO - Skipping threshold comparison (disabled in config)
+2025-06-04 11:14:53,408 - matching - INFO - Best algorithm based on match_count: embedding
+2025-06-04 11:14:58,595 - matching - INFO - Saved 92,685 matches to Excel: results/gerem_negociacoes/20250604_110337/best_matches.xlsx
+2025-06-04 11:14:58,597 - matching - INFO - GEREM to Negotiations matching completed. Results in results/gerem_negociacoes/20250604_110337
+2025-06-04 11:14:58,597 - matching - INFO - Best algorithm: embedding
+2025-06-04 11:14:58,597 - matching - INFO - All matching completed successfully
+2025-06-04 11:15:15,911 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-04 11:15:15,911 - matching - INFO - Initializing data loader
+2025-06-04 11:15:21,135 - matching - INFO - Initializing matching algorithms
+2025-06-04 11:15:21,136 - matching - INFO - Initializing evaluator
+2025-06-04 11:15:21,136 - matching - INFO - Initializing visualizer
+2025-06-04 11:15:21,136 - matching - INFO - Running GEREM to Projects matching
+2025-06-04 11:15:21,137 - matching - INFO - Starting GEREM to Projects matching
+2025-06-04 11:15:21,137 - matching - INFO - Loading GEREM interactions data
+2025-06-04 11:15:21,536 - matching - INFO - Loaded 2344 GEREM interactions
+2025-06-04 11:15:21,536 - matching - INFO - Loading projects data
+2025-06-04 11:15:22,557 - matching - INFO - Loaded 3297 projects
+2025-06-04 11:15:24,078 - matching - INFO - Running Levenshtein matching
+2025-06-04 11:15:24,081 - matching - ERROR - Error running matching: 'nome_empresa'
+2025-06-04 11:15:24,085 - matching - ERROR - Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3805, in get_loc
+    return self._engine.get_loc(casted_key)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
+  File "index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7081, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7089, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'nome_empresa'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 795, in main
+    projetos_results = run_gerem_projetos_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger)
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 572, in run_gerem_projetos_matching
+    levenshtein_results = matcher.levenshtein_matching(
+        gerem_df, projetos_df, source_col, target_col, date_cols
+    )
+  File "/Users/lucaspinheiro/Desktop/geremTest/matching_algorithms.py", line 86, in levenshtein_matching
+    target_df['normalized_text'] = target_df[target_col].apply(self.preprocess_text)
+                                   ~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/frame.py", line 4102, in __getitem__
+    indexer = self.columns.get_loc(key)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
+    raise KeyError(key) from err
+KeyError: 'nome_empresa'
+
+2025-06-04 11:27:47,170 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-04 11:27:47,170 - matching - INFO - Initializing data loader
+2025-06-04 11:27:51,551 - matching - INFO - Initializing matching algorithms
+2025-06-04 11:27:51,551 - matching - INFO - Initializing evaluator
+2025-06-04 11:27:51,551 - matching - INFO - Initializing visualizer
+2025-06-04 11:27:51,551 - matching - INFO - Running GEREM to Projects matching
+2025-06-04 11:27:51,552 - matching - INFO - Starting GEREM to Projects matching
+2025-06-04 11:27:51,552 - matching - INFO - Loading GEREM interactions data
+2025-06-04 11:27:52,036 - matching - INFO - Loaded 2344 GEREM interactions
+2025-06-04 11:27:52,036 - matching - INFO - Loading projects data
+2025-06-04 11:27:53,344 - matching - INFO - Loaded 3297 projects
+2025-06-04 11:27:55,018 - matching - INFO - Running Levenshtein matching
+2025-06-04 11:28:23,413 - matching - INFO - Found 1138 matches using Levenshtein
+2025-06-04 11:28:23,478 - matching - INFO - Saved 1,138 matches to Excel: results/gerem_projetos/20250604_112751/levenshtein_matches.xlsx
+2025-06-04 11:28:23,478 - matching - INFO - Running Jaro-Winkler matching
+2025-06-04 11:28:53,093 - matching - INFO - Found 2028 matches using Jaro-Winkler
+2025-06-04 11:28:53,202 - matching - INFO - Saved 2,028 matches to Excel: results/gerem_projetos/20250604_112751/jaro_winkler_matches.xlsx
+2025-06-04 11:28:53,202 - matching - INFO - Running Embedding matching
+2025-06-04 11:32:33,744 - matching - INFO - Found 34859 matches using Embeddings
+2025-06-04 11:32:35,761 - matching - INFO - Saved 34,859 matches to Excel: results/gerem_projetos/20250604_112751/embedding_matches.xlsx
+2025-06-04 11:32:35,761 - matching - INFO - Evaluating matching results
+2025-06-04 11:32:37,845 - matching - INFO - Generating visualizations for projects
+2025-06-04 11:32:49,409 - matching - INFO - Skipping threshold comparison (disabled in config)
+2025-06-04 11:32:49,411 - matching - INFO - Best algorithm based on match_count: embedding
+2025-06-04 11:32:51,462 - matching - INFO - Saved 34,859 matches to Excel: results/gerem_projetos/20250604_112751/best_matches.xlsx
+2025-06-04 11:32:51,465 - matching - INFO - GEREM to Projects matching completed. Results in results/gerem_projetos/20250604_112751
+2025-06-04 11:32:51,465 - matching - INFO - Best algorithm: embedding
+2025-06-04 11:32:51,465 - matching - INFO - All matching completed successfully
+2025-06-04 14:47:33,942 - matching - INFO - Starting EMBRAPII matching tool
+2025-06-04 14:47:33,942 - matching - INFO - Initializing data loader
+2025-06-04 14:47:37,421 - matching - INFO - Initializing matching algorithms
+2025-06-04 14:47:37,421 - matching - INFO - Initializing evaluator
+2025-06-04 14:47:37,421 - matching - INFO - Initializing visualizer
+2025-06-04 14:47:37,421 - matching - INFO - Running GEREM to Prospections matching
+2025-06-04 14:47:37,421 - matching - INFO - Starting GEREM to Prospections matching
+2025-06-04 14:47:37,421 - matching - INFO - Loading GEREM interactions data
+2025-06-04 14:47:37,837 - matching - INFO - Loaded 2344 GEREM interactions
+2025-06-04 14:47:37,837 - matching - INFO - Loading prospections data
+2025-06-04 14:47:40,056 - matching - INFO - Loaded 32508 prospections
