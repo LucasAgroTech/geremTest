@@ -448,8 +448,7 @@ def render_cloud_sidebar(analyzer):
     elif data_source == "📤 Upload de Arquivos":
         # Usar expander para economizar espaço
         with st.sidebar.expander("📤 **Configurar Upload de Arquivos**", expanded=False):
-            st.markdown("*Faça upload dos seus arquivos de resultados*")
-            st.markdown("**Formatos aceitos:** .xlsx, .csv")
+            st.markdown("*Faça upload dos seus arquivos de resultados*  \n**Formatos aceitos:** .xlsx, .csv")
             
             # Upload para Prospecções
             prospecoes_file = st.file_uploader(
