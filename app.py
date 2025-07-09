@@ -36,16 +36,18 @@ import base64
 
 # NÃO importar chain_analysis.py para evitar conflito com st.set_page_config()
 
-# Importar PostgreSQL (opcional)
-try:
-    from database_config import (
-        render_postgresql_config, 
-        upload_to_postgresql, 
-        load_from_postgresql
-    )
-    POSTGRESQL_AVAILABLE = True
-except ImportError:
-    POSTGRESQL_AVAILABLE = False
+# PostgreSQL opcional (desabilitado para Streamlit Cloud)
+POSTGRESQL_AVAILABLE = False
+
+# Função stub para PostgreSQL
+def render_postgresql_config():
+    return False
+
+def upload_to_postgresql(data):
+    return False
+
+def load_from_postgresql():
+    return {}
 
 # CSS personalizado (mesmo do arquivo principal)
 st.markdown("""
