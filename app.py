@@ -509,27 +509,25 @@ def render_cloud_sidebar(analyzer):
             else:
                 st.info("👆 Selecione pelo menos um arquivo para continuar")
     
-    st.sidebar.markdown("---")
-    
-    # Status dos dados
+    # Status dos dados (compacto)
     if 'data_loaded' in st.session_state and st.session_state.data_loaded:
-        st.sidebar.markdown("**📊 Status dos Dados**")
-        results = st.session_state.get('results', {})
-        
-        for stage, label in [('gerem_prospecoes', 'Prospecções'), 
-                           ('gerem_negociacoes', 'Negociações'), 
-                           ('gerem_projetos', 'Projetos')]:
-            if stage in results and not results[stage].empty:
-                count = len(results[stage])
-                st.sidebar.markdown(f'<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #28a745; margin-right: 8px;"></span>{label}: {count:,} registros', unsafe_allow_html=True)
-            else:
-                st.sidebar.markdown(f'<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #dc3545; margin-right: 8px;"></span>{label}: Sem dados', unsafe_allow_html=True)
+        st.sidebar.markdown("---")
+        with st.sidebar.expander("📊 **Status dos Dados**", expanded=False):
+            results = st.session_state.get('results', {})
+            
+            for stage, label in [('gerem_prospecoes', 'Prospecções'), 
+                               ('gerem_negociacoes', 'Negociações'), 
+                               ('gerem_projetos', 'Projetos')]:
+                if stage in results and not results[stage].empty:
+                    count = len(results[stage])
+                    st.markdown(f'<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #28a745; margin-right: 8px;"></span>{label}: {count:,} registros', unsafe_allow_html=True)
+                else:
+                    st.markdown(f'<span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #dc3545; margin-right: 8px;"></span>{label}: Sem dados', unsafe_allow_html=True)
     
     st.sidebar.markdown("---")
     
     # Configurações de threshold
     st.sidebar.markdown("**🎯 Thresholds de Similaridade**")
-    st.sidebar.markdown("*Configurações para algoritmo de embedding*")
     
     thresholds = {}
     
