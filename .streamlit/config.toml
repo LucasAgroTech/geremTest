@@ -1,0 +1,21 @@
+[server]
+# Configurações para deploy em produção
+port = 8501
+headless = true
+enableXsrfProtection = false
+
+[browser]
+# Configurações do navegador
+gatherUsageStats = false
+
+[theme]
+# Tema profissional
+primaryColor = "#1f4e79"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f8f9fa"
+textColor = "#2c3e50"
+font = "sans serif"
+
+[logger]
+# Configurações de log
+level = "info" 

@@ -1,0 +1,7 @@
+# Dependências do sistema para Streamlit Community Cloud
+# Necessárias para sentence-transformers e outras bibliotecas de ML
+
+build-essential
+python3-dev
+libffi-dev
+libssl-dev 
