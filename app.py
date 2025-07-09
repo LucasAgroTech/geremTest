@@ -123,6 +123,23 @@ st.markdown("""
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
+    
+    /* Estilo do expander na sidebar */
+    .streamlit-expanderHeader {
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        color: white !important;
+        border-radius: 8px;
+        padding: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .streamlit-expanderContent {
+        background: var(--light-bg);
+        border: 1px solid var(--primary-color);
+        border-radius: 0 0 8px 8px;
+        padding: 1rem;
+        margin-top: -1px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -389,7 +406,7 @@ def render_demo_mode():
 
 def render_cloud_sidebar(analyzer):
     """Renderiza sidebar específica para versão cloud"""
-    st.sidebar.markdown('<p style="color: #1f4e79; font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; text-align: center;">⚙️ Configurações</p>', unsafe_allow_html=True)
+    st.sidebar.markdown('<p style="color: #1f4e79; font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; text-align: left;">⚙️ Configurações</p>', unsafe_allow_html=True)
     
     # Seção de dados
     st.sidebar.markdown("### 📂 Fonte de Dados")
@@ -429,62 +446,69 @@ def render_cloud_sidebar(analyzer):
             st.sidebar.error("❌ PostgreSQL não disponível. Instale: pip install psycopg2-binary")
     
     elif data_source == "📤 Upload de Arquivos":
-        st.sidebar.markdown("**📤 Upload de Arquivos de Embedding**")
-        st.sidebar.markdown("*Faça upload dos seus arquivos de resultados*")
-        
-        # Upload para Prospecções
-        prospecoes_file = st.sidebar.file_uploader(
-            "🎯 Arquivo Prospecções (embedding)",
-            type=['xlsx', 'csv'],
-            help="Arquivo com resultados GEREM → Prospecções",
-            key="prospecoes"
-        )
-        
-        # Upload para Negociações
-        negociacoes_file = st.sidebar.file_uploader(
-            "🤝 Arquivo Negociações (embedding)",
-            type=['xlsx', 'csv'],
-            help="Arquivo com resultados GEREM → Negociações",
-            key="negociacoes"
-        )
-        
-        # Upload para Projetos
-        projetos_file = st.sidebar.file_uploader(
-            "🚀 Arquivo Projetos (embedding)",
-            type=['xlsx', 'csv'],
-            help="Arquivo com resultados GEREM → Projetos",
-            key="projetos"
-        )
-        
-        # Botão para processar
-        uploaded_files = [f for f in [prospecoes_file, negociacoes_file, projetos_file] if f is not None]
-        
-        if uploaded_files and st.sidebar.button("📤 Processar Arquivos", use_container_width=True):
-            with st.spinner("Processando arquivos..."):
-                results = {}
+        # Usar expander para economizar espaço
+        with st.sidebar.expander("📤 **Configurar Upload de Arquivos**", expanded=False):
+            st.markdown("*Faça upload dos seus arquivos de resultados*")
+            st.markdown("**Formatos aceitos:** .xlsx, .csv")
+            
+            # Upload para Prospecções
+            prospecoes_file = st.file_uploader(
+                "🎯 Arquivo Prospecções (embedding)",
+                type=['xlsx', 'csv'],
+                help="Arquivo com resultados GEREM → Prospecções",
+                key="prospecoes"
+            )
+            
+            # Upload para Negociações
+            negociacoes_file = st.file_uploader(
+                "🤝 Arquivo Negociações (embedding)",
+                type=['xlsx', 'csv'],
+                help="Arquivo com resultados GEREM → Negociações",
+                key="negociacoes"
+            )
+            
+            # Upload para Projetos
+            projetos_file = st.file_uploader(
+                "🚀 Arquivo Projetos (embedding)",
+                type=['xlsx', 'csv'],
+                help="Arquivo com resultados GEREM → Projetos",
+                key="projetos"
+            )
+            
+            # Botão para processar
+            uploaded_files = [f for f in [prospecoes_file, negociacoes_file, projetos_file] if f is not None]
+            
+            if uploaded_files:
+                st.info(f"📁 {len(uploaded_files)} arquivo(s) selecionado(s)")
                 
-                # Processar cada arquivo
-                if prospecoes_file:
-                    results['gerem_prospecoes'] = load_single_file(prospecoes_file, "Prospecções")
-                
-                if negociacoes_file:
-                    results['gerem_negociacoes'] = load_single_file(negociacoes_file, "Negociações")
-                
-                if projetos_file:
-                    results['gerem_projetos'] = load_single_file(projetos_file, "Projetos")
-                
-                st.session_state.results = results
-                st.session_state.data_loaded = True
-                st.session_state.demo_mode = False
-                st.sidebar.success("✅ Arquivos processados!")
-                
-                # Opção para enviar para PostgreSQL
-                if POSTGRESQL_AVAILABLE and st.sidebar.checkbox("📤 Enviar para PostgreSQL"):
-                    if st.sidebar.button("🚀 Enviar para BD", use_container_width=True):
-                        if upload_to_postgresql(results):
-                            st.sidebar.success("✅ Dados enviados para PostgreSQL!")
-                        else:
-                            st.sidebar.error("❌ Falha ao enviar para PostgreSQL")
+                if st.button("📤 Processar Arquivos", use_container_width=True):
+                    with st.spinner("Processando arquivos..."):
+                        results = {}
+                        
+                        # Processar cada arquivo
+                        if prospecoes_file:
+                            results['gerem_prospecoes'] = load_single_file(prospecoes_file, "Prospecções")
+                        
+                        if negociacoes_file:
+                            results['gerem_negociacoes'] = load_single_file(negociacoes_file, "Negociações")
+                        
+                        if projetos_file:
+                            results['gerem_projetos'] = load_single_file(projetos_file, "Projetos")
+                        
+                        st.session_state.results = results
+                        st.session_state.data_loaded = True
+                        st.session_state.demo_mode = False
+                        st.success("✅ Arquivos processados!")
+                        
+                        # Opção para enviar para PostgreSQL
+                        if POSTGRESQL_AVAILABLE and st.checkbox("📤 Enviar para PostgreSQL"):
+                            if st.button("🚀 Enviar para BD", use_container_width=True):
+                                if upload_to_postgresql(results):
+                                    st.success("✅ Dados enviados para PostgreSQL!")
+                                else:
+                                    st.error("❌ Falha ao enviar para PostgreSQL")
+            else:
+                st.info("👆 Selecione pelo menos um arquivo para continuar")
     
     st.sidebar.markdown("---")
     
