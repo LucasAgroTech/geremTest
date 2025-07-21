@@ -16,48 +16,158 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Virtual Environment
-venv/
-env/
-ENV/
+# PyInstaller
+*.manifest
+*.spec
 
-# Streamlit
-.streamlit/secrets.toml
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Database
-*.db
-*.sqlite3
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
 
-# Logs
-logs/
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
 *.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
-# Temp
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Arquivos de dados e resultados
+*.xlsx
+*.xls
+*.csv
+data/
 temp/
-tmp/
+results/
+logs/
+evaluation/
+visualization/
 
-# Results (se contém dados sensíveis)
-# results/
+# Arquivos de modelo grandes (manter apenas estrutura)
+company_matching_trainer/models/*/model.safetensors
+company_matching_trainer/models/*/training_args.bin
+company_matching_trainer/models/*/tokenizer.json
+company_matching_trainer/models/*/vocab.txt
+company_matching_trainer/models/*/checkpoint-*/
 
-# Data (se contém dados sensíveis) 
-# data/
+# Arquivos de dados de treinamento
+company_matching_trainer/data/*.csv
+company_matching_trainer/data/*.xlsx
+company_matching_trainer/results/
 
-# OS
+# Arquivos temporários
+*.tmp
+*.temp
+*~
+
+# Sistema operacional
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Jupyter
-.ipynb_checkpoints/
+# Arquivos de teste gerados
+test_*.xlsx
+*_partial_*.xlsx
+*_interrupted_*.xlsx
+custom_matches_*.xlsx
+embedding_matches_*.xlsx
 
-# Environment variables
-.env
+# Office365 storage
+office365_api/storage/upload/*
+!office365_api/storage/upload/.gitkeep

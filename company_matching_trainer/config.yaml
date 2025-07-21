@@ -1,0 +1,142 @@
+# Configuração Otimizada para Capturar Falsos Positivos de Alta Similaridade
+# ============================================================================
+
+# Configurações de Dados e Rotulação
+data:
+  auto_labeling:
+    # NOVOS THRESHOLDS MAIS RIGOROSOS
+    high_similarity_threshold: 0.95    # Apenas casos muito óbvios (era 0.9)
+    medium_similarity_threshold: 0.85  # NOVA FAIXA CRÍTICA para validação obrigatória
+    low_similarity_threshold: 0.5      # Mantém threshold baixo
+    
+    # Amostragem de casos de alta similaridade
+    sample_high_similarity: true       # Forçar amostragem de casos "automáticos"
+    sample_rate: 0.15                  # 15% dos casos >0.95 para validação manual
+    
+    # Padrões suspeitos que sempre precisam validação
+    suspicious_patterns:
+      enabled: true
+      patterns:
+        - "LTDA.*S\\.A\\."              # Diferentes tipos societários
+        - "BRASIL.*CORPORATION"         # Subsidiária vs matriz
+        - "DISTRIBUIDORA.*S\\.A\\."     # Divisões diferentes
+        - "NORTE.*SUL"                  # Regiões diferentes
+        - "\\d+.*\\d+"                 # Numerações diferentes
+        - "FILIAL.*MATRIZ"              # Filial vs matriz
+    
+    # Empresas que sempre precisam validação manual (multinacionais/grandes grupos)
+    always_validate_companies:
+      - "MICROSOFT"
+      - "GOOGLE" 
+      - "AMAZON"
+      - "PETROBRAS"
+      - "VALE"
+      - "BASF"
+      - "VOLKSWAGEN"
+      - "GENERAL MOTORS"
+      - "FORD"
+      - "TOYOTA"
+
+# Configurações de Treinamento
+training:
+  model_name: "neuralmind/bert-base-portuguese-cased"
+  batch_size: 16
+  learning_rate: 2e-5
+  num_epochs: 3
+  max_length: 128
+  
+  # Early stopping
+  early_stopping_patience: 3
+  evaluation_strategy: "steps"
+  eval_steps: 50
+  save_steps: 100
+  
+  # Otimizações
+  weight_decay: 0.01
+  warmup_steps: 100
+  gradient_accumulation_steps: 1
+
+# Configurações do Modelo
+model:
+  num_labels: 2
+  dropout_rate: 0.3
+  hidden_size: 768
+  
+# Configurações de Validação Manual
+validation:
+  # Priorização de casos para validação
+  prioritize_by:
+    - "similarity_range"     # Priorizar faixa crítica 0.85-0.95
+    - "suspicious_patterns"  # Priorizar padrões suspeitos
+    - "company_importance"   # Priorizar grandes empresas
+    - "frequency"           # Priorizar casos mais frequentes
+  
+  # Configurações da interface
+  batch_size: 20            # Casos por página
+  auto_save_interval: 5     # Salvar a cada 5 validações
+  
+  # Métricas de progresso
+  target_validations:
+    phase_1: 100            # Primeiro treinamento
+    phase_2: 200            # Segundo treinamento
+    phase_3: 500            # Modelo especialista
+
+# Configurações de Integração
+integration:
+  threshold: 0.7            # Threshold para uso em produção
+  confidence_threshold: 0.8 # Threshold de confiança mínima
+  
+  # Configurações de performance
+  batch_prediction_size: 32
+  max_comparisons: 1000000  # Limite de comparações por execução
+  
+# Configurações de Logging e Monitoramento
+logging:
+  level: "INFO"
+  save_training_logs: true
+  save_validation_logs: true
+  log_suspicious_cases: true
+  
+  # Métricas para acompanhar
+  track_metrics:
+    - "accuracy"
+    - "precision" 
+    - "recall"
+    - "f1_score"
+    - "false_positive_rate"
+    - "false_negative_rate"
+
+# Configurações de Saída
+output:
+  save_partial_results: true
+  partial_save_interval: 10  # Salvar a cada 10 lotes
+  
+  # Formatos de saída
+  formats:
+    - "csv"
+    - "xlsx"
+    - "json"
+  
+  # Relatórios
+  generate_reports:
+    - "training_summary"
+    - "validation_progress"
+    - "suspicious_cases_analysis"
+    - "performance_metrics"
+
+# Configurações Experimentais
+experimental:
+  # Análise de padrões avançada
+  pattern_analysis:
+    enabled: true
+    min_pattern_frequency: 3
+    
+  # Detecção automática de falsos positivos
+  auto_false_positive_detection:
+    enabled: true
+    confidence_threshold: 0.9
+    
+  # Aprendizado ativo
+  active_learning:
+    enabled: false  # Para versões futuras
+    uncertainty_threshold: 0.6

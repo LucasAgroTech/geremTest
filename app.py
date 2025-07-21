@@ -177,13 +177,21 @@ class CloudChainAnalyzer:
             similarities = np.random.beta(3, 2, config['size']) * 0.4 + config['sim_base']
             similarities = np.clip(similarities, 0.5, 0.98)
             
+            # Gerar datas realistas para demonstração (2020-2024)
+            start_date = pd.Timestamp('2020-01-01')
+            end_date = pd.Timestamp('2024-12-31')
+            date_range = pd.date_range(start_date, end_date, freq='D')
+            random_dates = np.random.choice(date_range, config['size'])
+            
             # Criar DataFrame
             df = pd.DataFrame({
                 'source_id': [f"GEREM_{i+1:04d}" for i in range(config['size'])],
                 'target_id': [f"{data_type.split('_')[1].upper()}_{i+1:04d}" for i in range(config['size'])],
                 'similarity': similarities,
                 'source_text': [f"Interação GEREM {i+1} - Exemplo de texto" for i in range(config['size'])],
-                'target_text': [f"Texto {data_type.split('_')[1]} {i+1} - Exemplo" for i in range(config['size'])]
+                'target_text': [f"Texto {data_type.split('_')[1]} {i+1} - Exemplo" for i in range(config['size'])],
+                'source_date': random_dates,
+                'target_date': random_dates + pd.Timedelta(days=np.random.randint(0, 180, config['size']))
             })
             
             sample_data[data_type] = df
@@ -566,7 +574,53 @@ def render_cloud_sidebar(analyzer):
     auto_update = st.sidebar.checkbox("🔄 Atualização Automática", value=True)
     show_details = st.sidebar.checkbox("📋 Mostrar Detalhes", value=False)
     
-    return thresholds, auto_update, show_details
+    # Filtro de Ano
+    st.sidebar.markdown("### 📅 Filtro de Período")
+    
+    # Determinar anos disponíveis nos dados
+    available_years = []
+    if 'data_loaded' in st.session_state and st.session_state.data_loaded:
+        results = st.session_state.get('results', {})
+        for key, df in results.items():
+            if not df.empty:
+                # Verificar se há colunas de data
+                date_cols = [col for col in df.columns if 'date' in col.lower() or 'data' in col.lower()]
+                for date_col in date_cols:
+                    try:
+                        # Converter para datetime se necessário
+                        if not pd.api.types.is_datetime64_any_dtype(df[date_col]):
+                            df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+                        
+                        # Extrair anos únicos
+                        years = df[date_col].dt.year.dropna().unique()
+                        available_years.extend(years)
+                    except:
+                        continue
+    
+    # Remover duplicatas e ordenar
+    available_years = sorted(list(set(available_years))) if available_years else list(range(2020, 2025))
+    
+    # Filtro de ano
+    filter_by_year = st.sidebar.checkbox("Filtrar por Ano", value=False, help="Ativar filtro de ano para análise")
+    
+    selected_years = None
+    if filter_by_year:
+        selected_years = st.sidebar.multiselect(
+            "Selecionar Anos",
+            options=available_years,
+            default=available_years[-2:] if len(available_years) > 1 else available_years,
+            help="Selecione os anos para incluir na análise"
+        )
+        
+        if not selected_years:
+            st.sidebar.warning("⚠️ Nenhum ano selecionado. Usando todos os dados.")
+            selected_years = None
+    
+    # Mostrar informações sobre o filtro de ano
+    if filter_by_year and selected_years:
+        st.sidebar.info(f"📅 Filtrando anos: {', '.join(map(str, selected_years))}")
+    
+    return thresholds, auto_update, show_details, selected_years
 
 def load_single_file(uploaded_file, file_type):
     """Carrega um único arquivo de embedding"""
@@ -872,6 +926,76 @@ def render_simple_dashboard(analysis):
     with col3:
         st.info("**Dados Seguros**\n\nTodos os dados ficam apenas na sua sessão e não são armazenados permanentemente.")
 
+def filter_data_by_years(results, selected_years):
+    """Filtra os dados pelos anos selecionados"""
+    if not selected_years or not results:
+        return results
+    
+    st.sidebar.write(f"🔍 **Debug**: Filtrando por anos: {selected_years}")
+    
+    filtered_results = {}
+    
+    for key, df in results.items():
+        if df.empty:
+            filtered_results[key] = df
+            continue
+            
+        st.sidebar.write(f"📊 **{key}**: {len(df)} registros originais")
+        st.sidebar.write(f"🔍 Colunas disponíveis: {list(df.columns)}")
+        
+        # Identificar colunas de data
+        date_cols = [col for col in df.columns if 'date' in col.lower() or 'data' in col.lower()]
+        st.sidebar.write(f"📅 Colunas de data encontradas: {date_cols}")
+        
+        if not date_cols:
+            # Se não há colunas de data, manter todos os dados
+            st.sidebar.warning(f"⚠️ {key}: Nenhuma coluna de data encontrada, mantendo todos os dados")
+            filtered_results[key] = df
+            continue
+        
+        # Filtrar por qualquer uma das colunas de data
+        mask = pd.Series([False] * len(df))
+        
+        for date_col in date_cols:
+            try:
+                # Converter para datetime se necessário
+                if not pd.api.types.is_datetime64_any_dtype(df[date_col]):
+                    temp_dates = pd.to_datetime(df[date_col], errors='coerce')
+                else:
+                    temp_dates = df[date_col]
+                
+                # Mostrar alguns valores de exemplo
+                sample_dates = temp_dates.dropna().head(3)
+                st.sidebar.write(f"📅 **{date_col}** - Exemplos: {sample_dates.tolist()}")
+                
+                # Extrair anos únicos
+                years_in_col = temp_dates.dt.year.dropna().unique()
+                st.sidebar.write(f"🗓️ Anos encontrados em {date_col}: {sorted(years_in_col)}")
+                
+                # Criar máscara para anos selecionados
+                year_mask = temp_dates.dt.year.isin(selected_years)
+                records_matching = year_mask.sum()
+                st.sidebar.write(f"✅ Registros que coincidem em {date_col}: {records_matching}")
+                
+                mask = mask | year_mask.fillna(False)
+                
+            except Exception as e:
+                st.sidebar.error(f"❌ Erro ao processar coluna {date_col}: {e}")
+                continue
+        
+        # Aplicar filtro
+        total_matching = mask.sum()
+        st.sidebar.write(f"🎯 Total de registros que coincidem: {total_matching}")
+        
+        filtered_df = df[mask].copy() if mask.any() else df.copy()
+        filtered_results[key] = filtered_df
+        
+        # Mostrar informação sobre filtragem
+        st.sidebar.success(f"📊 **{key}**: {len(df)} → {len(filtered_df)} registros após filtro")
+        st.sidebar.write("---")
+    
+    return filtered_results
+
 def main():
     """Função principal da aplicação cloud"""
     # Header
@@ -887,7 +1011,7 @@ def main():
     analyzer = CloudChainAnalyzer()
     
     # Renderizar sidebar
-    thresholds, auto_update, show_details = render_cloud_sidebar(analyzer)
+    thresholds, auto_update, show_details, selected_years = render_cloud_sidebar(analyzer)
     
     # Verificar se dados foram carregados
     if 'data_loaded' not in st.session_state:
@@ -932,13 +1056,41 @@ def main():
     if is_demo:
         render_demo_mode()
     
+    # Mostrar informação sobre filtro de ano se ativo
+    if selected_years:
+        st.info(f"📅 **Filtro de Ano Ativo**: Analisando dados de {', '.join(map(str, selected_years))}")
+    elif 'data_loaded' in st.session_state and st.session_state.data_loaded:
+        # Verificar se há dados de anos diferentes
+        all_years = set()
+        for key, df in results.items():
+            if not df.empty:
+                date_cols = [col for col in df.columns if 'date' in col.lower() or 'data' in col.lower()]
+                for date_col in date_cols:
+                    try:
+                        if not pd.api.types.is_datetime64_any_dtype(df[date_col]):
+                            temp_dates = pd.to_datetime(df[date_col], errors='coerce')
+                        else:
+                            temp_dates = df[date_col]
+                        years = temp_dates.dt.year.dropna().unique()
+                        all_years.update(years)
+                    except:
+                        continue
+        
+        if len(all_years) > 1:
+            years_range = f"{min(all_years)}-{max(all_years)}"
+            st.info(f"📅 **Dados Disponíveis**: {years_range} • Use o filtro na barra lateral para focar em anos específicos")
+    
     # Verificar se há dados carregados
     if not results:
         st.error("❌ Nenhum dado foi carregado. Tente novamente ou use o modo demonstração.")
         return
     
+    # Aplicar filtro de ano se selecionado
+    if selected_years:
+        results = filter_data_by_years(results, selected_years)
+    
     # Verificar mudanças nos parâmetros
-    current_params = {'thresholds': thresholds, 'show_details': show_details}
+    current_params = {'thresholds': thresholds, 'show_details': show_details, 'selected_years': selected_years}
     
     # Executar análise
     should_analyze = False

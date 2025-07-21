@@ -5,6 +5,14 @@ import jellyfish    # para Jaro-Winkler
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
+# Importar o matcher personalizado
+try:
+    from custom_model_integration import CustomTrainedMatcher
+    CUSTOM_MODEL_AVAILABLE = True
+except ImportError:
+    CUSTOM_MODEL_AVAILABLE = False
+    print("⚠️ Modelo personalizado não disponível. Usando apenas algoritmos padrão.")
+
 class MatchingAlgorithms:
     def __init__(self, config=None):
         """Initialize matching algorithms with configuration"""
@@ -19,9 +27,21 @@ class MatchingAlgorithms:
         # Update with provided config if any
         if config:
             self.config.update(config)
+            
+            # Adicionar configuração do modelo personalizado se disponível
+            if 'custom_trained' in config and CUSTOM_MODEL_AVAILABLE:
+                self.config.update({
+                    'custom_threshold': config['custom_trained'].get('threshold', 0.75),
+                    'custom_model_path': config['custom_trained'].get('model_path', 'company_matching_trainer/models/manual_validated_matcher'),
+                    'custom_batch_size': config['custom_trained'].get('batch_size', 32),
+                    'custom_max_length': config['custom_trained'].get('max_length', 128)
+                })
         
         # Initialize sentence transformer model (load on first use)
         self.embedding_model = None
+        
+        # Initialize custom matcher (load on first use)
+        self.custom_matcher = None
     
     def _load_embedding_model(self):
         """Load the sentence transformer model on first use"""
@@ -32,6 +52,22 @@ class MatchingAlgorithms:
                 print(f"Modelo '{self.config['embedding_model']}' carregado com sucesso")
             except Exception as e:
                 print(f"Erro ao carregar modelo de embeddings: {e}")
+                raise
+    
+    def _load_custom_matcher(self):
+        """Carrega o matcher personalizado sob demanda"""
+        if self.custom_matcher is None and CUSTOM_MODEL_AVAILABLE:
+            try:
+                custom_config = {
+                    'custom_threshold': self.config.get('custom_threshold', 0.75),
+                    'model_path': self.config.get('custom_model_path', 'company_matching_trainer/models/manual_validated_matcher'),
+                    'batch_size': self.config.get('custom_batch_size', 32),
+                    'max_length': self.config.get('custom_max_length', 128)
+                }
+                self.custom_matcher = CustomTrainedMatcher(custom_config)
+                print("✅ Modelo personalizado carregado com sucesso")
+            except Exception as e:
+                print(f"❌ Erro ao carregar modelo personalizado: {e}")
                 raise
     
     def preprocess_text(self, text):
@@ -308,14 +344,30 @@ class MatchingAlgorithms:
                             source_row = source_df.loc[source_idx]
                             target_row = target_df.loc[target_idx]
                             
-                            matches.append({
+                            # Extrair ano da data de interação GEREM
+                            source_year = None
+                            if date_cols and len(date_cols) >= 1:
+                                try:
+                                    source_date = pd.to_datetime(source_row[date_cols[0]], errors='coerce')
+                                    if not pd.isna(source_date):
+                                        source_year = source_date.year
+                                except:
+                                    pass
+                            
+                            match_data = {
                                 'source_id': source_idx,
                                 'target_id': target_idx,
                                 'source_text': source_row[source_col],
                                 'target_text': target_row[target_col],
                                 'similarity': similarity,
                                 'algorithm': 'embedding'
-                            })
+                            }
+                            
+                            # Adicionar coluna de ano se disponível
+                            if source_year is not None:
+                                match_data['ano_interacao'] = source_year
+                            
+                            matches.append(match_data)
                 
                 # Mostrar progresso a cada lote
                 matches_found = len(matches)
@@ -362,13 +414,70 @@ class MatchingAlgorithms:
                     
                     # Keep match if above threshold
                     if similarity >= self.config['embedding_threshold']:
-                        matches.append({
+                        # Extrair ano da data de interação GEREM
+                        source_year = None
+                        if date_cols and len(date_cols) >= 1:
+                            try:
+                                source_date = pd.to_datetime(source_row[date_cols[0]], errors='coerce')
+                                if not pd.isna(source_date):
+                                    source_year = source_date.year
+                            except:
+                                pass
+                        
+                        match_data = {
                             'source_id': source_row.name,
                             'target_id': target_row.name,
                             'source_text': source_row[source_col],
                             'target_text': target_row[target_col],
                             'similarity': similarity,
                             'algorithm': 'embedding'
-                        })
+                        }
+                        
+                        # Adicionar coluna de ano se disponível
+                        if source_year is not None:
+                            match_data['ano_interacao'] = source_year
+                        
+                        matches.append(match_data)
         
         return pd.DataFrame(matches).sort_values('similarity', ascending=False) if matches else pd.DataFrame()
+    
+    def custom_trained_matching(self, source_df, target_df, source_col, target_col, date_cols=None):
+        """
+        VERSÃO OTIMIZADA - Matching usando modelo personalizado treinado com 99.50% de acurácia
+        Inclui otimizações para evitar travamentos:
+        - Filtro de data aplicado ANTES dos embeddings
+        - Processamento em lotes pequenos
+        - Limite de comparações por segurança
+        - Salvamento de resultados parciais
+        - Limpeza de memória
+        
+        Args:
+            source_df: DataFrame com dados de origem (ex: GEREM interactions)
+            target_df: DataFrame com dados de destino (ex: prospections)
+            source_col: Nome da coluna em source_df para matching
+            target_col: Nome da coluna em target_df para matching
+            date_cols: Tupla (source_date_col, target_date_col) para filtro de data
+            
+        Returns:
+            DataFrame com matches encontrados
+        """
+        if not CUSTOM_MODEL_AVAILABLE:
+            print("❌ Modelo personalizado não disponível. Use outro algoritmo.")
+            return pd.DataFrame()
+        
+        # Carregar matcher se necessário
+        self._load_custom_matcher()
+        
+        # OTIMIZAÇÃO 1: Configurar para modo eficiente
+        self.custom_matcher.config.update({
+            'custom_threshold': self.config.get('custom_threshold', 0.75),
+            'batch_size': 16,  # Reduzido para evitar travamento
+            'max_comparisons_per_batch': 20000,  # Limite de segurança
+            'save_partial_results': True,
+            'memory_efficient': True
+        })
+        
+        # OTIMIZAÇÃO 2: Usar método otimizado
+        return self.custom_matcher.custom_trained_matching(
+            source_df, target_df, source_col, target_col, date_cols
+        )

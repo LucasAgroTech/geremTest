@@ -1,0 +1,29 @@
+{
+  "evaluation_metrics": {
+    "eval_loss": 0.031797856092453,
+    "eval_accuracy": 0.9950248756218906,
+    "eval_f1": 0.992543516829816,
+    "eval_precision": 0.9900745031063588,
+    "eval_recall": 0.9950248756218906,
+    "eval_runtime": 9.5818,
+    "eval_samples_per_second": 20.977,
+    "eval_steps_per_second": 1.357,
+    "epoch": 5.0
+  },
+  "confusion_matrix": [
+    [
+      200,
+      0
+    ],
+    [
+      1,
+      0
+    ]
+  ],
+  "detailed_metrics": {
+    "accuracy": 0.9950248756218906,
+    "precision": 0.9900745031063588,
+    "recall": 0.9950248756218906,
+    "f1": 0.992543516829816
+  }
+}

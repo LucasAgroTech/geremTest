@@ -888,3 +888,101 @@ KeyError: 'nome_empresa'
 2025-06-04 14:47:37,837 - matching - INFO - Loaded 2344 GEREM interactions
 2025-06-04 14:47:37,837 - matching - INFO - Loading prospections data
 2025-06-04 14:47:40,056 - matching - INFO - Loaded 32508 prospections
+2025-07-15 09:19:03,125 - matching - INFO - Starting EMBRAPII matching tool
+2025-07-15 09:19:03,125 - matching - INFO - Initializing data loader
+2025-07-15 09:19:08,611 - matching - INFO - Initializing matching algorithms
+2025-07-15 09:19:08,611 - matching - INFO - Initializing evaluator
+2025-07-15 09:19:08,611 - matching - INFO - Initializing visualizer
+2025-07-15 09:19:08,611 - matching - INFO - Running GEREM to Prospections matching
+2025-07-15 09:19:08,611 - matching - INFO - Starting GEREM to Prospections matching
+2025-07-15 09:19:08,611 - matching - INFO - Loading GEREM interactions data
+2025-07-15 09:19:09,062 - matching - INFO - Loaded 2344 GEREM interactions
+2025-07-15 09:19:09,063 - matching - INFO - Loading prospections data
+2025-07-15 09:19:11,750 - matching - INFO - Loaded 33190 prospections
+2025-07-15 09:19:16,312 - matching - INFO - Running Embedding matching
+2025-07-15 09:19:21,628 - matching - ERROR - Error running matching: 'data_prospeccao'
+2025-07-15 09:19:21,642 - matching - ERROR - Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3805, in get_loc
+    return self._engine.get_loc(casted_key)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
+  File "index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7081, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7089, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'data_prospeccao'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 783, in main
+    prospecoes_results = run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, base_visualizer, logger)
+  File "/Users/lucaspinheiro/Desktop/geremTest/main.py", line 203, in run_gerem_prospecoes_matching
+    embedding_results = matcher.embedding_matching(
+        gerem_df, prospecoes_df, source_col, target_col, date_cols
+    )
+  File "/Users/lucaspinheiro/Desktop/geremTest/matching_algorithms.py", line 249, in embedding_matching
+    source_date = pd.to_datetime(source_row[date_cols[0]], errors='coerce')
+                                 ~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/series.py", line 1121, in __getitem__
+    return self._get_value(key)
+           ~~~~~~~~~~~~~~~^^^^^
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/series.py", line 1237, in _get_value
+    loc = self.index.get_loc(label)
+  File "/Users/lucaspinheiro/Desktop/geremTest/venv/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
+    raise KeyError(key) from err
+KeyError: 'data_prospeccao'
+
+2025-07-15 09:23:33,727 - matching - INFO - Starting EMBRAPII matching tool
+2025-07-15 09:23:33,728 - matching - INFO - Initializing data loader
+2025-07-15 09:23:38,982 - matching - INFO - Initializing matching algorithms
+2025-07-15 09:23:38,986 - matching - INFO - Initializing evaluator
+2025-07-15 09:23:38,987 - matching - INFO - Initializing visualizer
+2025-07-15 09:23:38,987 - matching - INFO - Running GEREM to Prospections matching
+2025-07-15 09:23:38,987 - matching - INFO - Starting GEREM to Prospections matching
+2025-07-15 09:23:38,987 - matching - INFO - Loading GEREM interactions data
+2025-07-15 09:23:39,476 - matching - INFO - Loaded 2344 GEREM interactions
+2025-07-15 09:23:39,476 - matching - INFO - Loading prospections data
+2025-07-15 09:23:42,433 - matching - INFO - Loaded 33190 prospections
+2025-07-15 09:23:47,504 - matching - INFO - Running Embedding matching
+2025-07-15 09:58:26,353 - matching - INFO - Found 184195 matches using Embeddings
+2025-07-15 09:58:38,286 - matching - INFO - Saved 184,195 matches to Excel: results/gerem_prospecoes/20250715_092338/embedding_matches.xlsx
+2025-07-15 09:58:38,286 - matching - INFO - Evaluating matching results
+2025-07-15 09:58:38,303 - matching - INFO - Generating visualizations for prospections
+2025-07-15 09:59:00,192 - matching - INFO - Skipping threshold comparison (disabled in config)
+2025-07-15 09:59:00,194 - matching - INFO - Best algorithm based on match_count: embedding
+2025-07-15 09:59:12,306 - matching - INFO - Saved 184,195 matches to Excel: results/gerem_prospecoes/20250715_092338/best_matches.xlsx
+2025-07-15 09:59:12,316 - matching - INFO - GEREM to Prospections matching completed. Results in results/gerem_prospecoes/20250715_092338
+2025-07-15 09:59:12,317 - matching - INFO - Best algorithm: embedding
+2025-07-15 09:59:12,317 - matching - INFO - Running GEREM to Negotiations matching
+2025-07-15 09:59:12,317 - matching - INFO - Starting GEREM to Negotiations matching
+2025-07-15 09:59:12,317 - matching - INFO - Loading GEREM interactions data
+2025-07-15 09:59:18,394 - matching - INFO - Loaded 2344 GEREM interactions
+2025-07-15 09:59:18,394 - matching - INFO - Loading and consolidating negotiations data
+2025-07-15 09:59:22,353 - matching - INFO - Loaded and consolidated 10496 negotiations
+2025-07-15 09:59:22,923 - matching - INFO - Running Embedding matching
+2025-07-15 10:09:09,513 - matching - INFO - Found 67531 matches using Embeddings
+2025-07-15 10:09:13,710 - matching - INFO - Saved 67,531 matches to Excel: results/gerem_negociacoes/20250715_095912/embedding_matches.xlsx
+2025-07-15 10:09:13,710 - matching - INFO - Evaluating matching results
+2025-07-15 10:09:13,721 - matching - INFO - Generating visualizations for negotiations
+2025-07-15 10:09:23,401 - matching - INFO - Skipping threshold comparison (disabled in config)
+2025-07-15 10:09:23,402 - matching - INFO - Best algorithm based on match_count: embedding
+2025-07-15 10:09:27,728 - matching - INFO - Saved 67,531 matches to Excel: results/gerem_negociacoes/20250715_095912/best_matches.xlsx
+2025-07-15 10:09:27,729 - matching - INFO - GEREM to Negotiations matching completed. Results in results/gerem_negociacoes/20250715_095912
+2025-07-15 10:09:27,729 - matching - INFO - Best algorithm: embedding
+2025-07-15 10:09:27,729 - matching - INFO - Running GEREM to Projects matching
+2025-07-15 10:09:27,732 - matching - INFO - Starting GEREM to Projects matching
+2025-07-15 10:09:27,732 - matching - INFO - Loading GEREM interactions data
+2025-07-15 10:09:28,129 - matching - INFO - Loaded 2344 GEREM interactions
+2025-07-15 10:09:28,129 - matching - INFO - Loading projects data
+2025-07-15 10:09:29,518 - matching - INFO - Loaded 3358 projects
+2025-07-15 10:09:31,214 - matching - INFO - Running Embedding matching
+2025-07-15 10:13:00,467 - matching - INFO - Found 24310 matches using Embeddings
+2025-07-15 10:13:02,035 - matching - INFO - Saved 24,310 matches to Excel: results/gerem_projetos/20250715_100927/embedding_matches.xlsx
+2025-07-15 10:13:02,035 - matching - INFO - Evaluating matching results
+2025-07-15 10:13:02,041 - matching - INFO - Generating visualizations for projects
+2025-07-15 10:13:07,554 - matching - INFO - Skipping threshold comparison (disabled in config)
+2025-07-15 10:13:07,558 - matching - INFO - Best algorithm based on match_count: embedding
+2025-07-15 10:13:09,209 - matching - INFO - Saved 24,310 matches to Excel: results/gerem_projetos/20250715_100927/best_matches.xlsx
+2025-07-15 10:13:09,211 - matching - INFO - GEREM to Projects matching completed. Results in results/gerem_projetos/20250715_100927
+2025-07-15 10:13:09,211 - matching - INFO - Best algorithm: embedding
+2025-07-15 10:13:09,212 - matching - INFO - All matching completed successfully

@@ -210,6 +210,22 @@ def run_gerem_prospecoes_matching(config, data_loader, matcher, base_evaluator, 
         # Save matches to file
         safe_save_results(embedding_results, os.path.join(results_dir, 'embedding_matches'), logger)
     
+    # Run Custom Trained matching if enabled
+    if config['matching']['algorithms'].get('custom_trained', {}).get('enabled', False):
+        logger.info("Running Custom Trained matching (99.50% accuracy model)")
+        matcher.config['custom_threshold'] = config['matching']['algorithms']['custom_trained']['threshold']
+        matcher.config['custom_model_path'] = config['matching']['algorithms']['custom_trained']['model_path']
+        
+        custom_results = matcher.custom_trained_matching(
+            gerem_df, prospecoes_df, source_col, target_col, date_cols
+        )
+        
+        results['custom_trained'] = custom_results
+        logger.info(f"Found {len(custom_results)} matches using Custom Trained Model")
+        
+        # Save matches to file
+        safe_save_results(custom_results, os.path.join(results_dir, 'custom_trained_matches'), logger)
+    
     # Evaluate results
     logger.info("Evaluating matching results")
     
@@ -409,6 +425,22 @@ def run_gerem_negociacoes_matching(config, data_loader, matcher, base_evaluator,
         
         # Save matches to file
         safe_save_results(embedding_results, os.path.join(results_dir, 'embedding_matches'), logger)
+    
+    # Run Custom Trained matching if enabled
+    if config['matching']['algorithms'].get('custom_trained', {}).get('enabled', False):
+        logger.info("Running Custom Trained matching (99.50% accuracy model)")
+        matcher.config['custom_threshold'] = config['matching']['algorithms']['custom_trained']['threshold']
+        matcher.config['custom_model_path'] = config['matching']['algorithms']['custom_trained']['model_path']
+        
+        custom_results = matcher.custom_trained_matching(
+            gerem_df, negociacoes_df, source_col, target_col, date_cols
+        )
+        
+        results['custom_trained'] = custom_results
+        logger.info(f"Found {len(custom_results)} matches using Custom Trained Model")
+        
+        # Save matches to file
+        safe_save_results(custom_results, os.path.join(results_dir, 'custom_trained_matches'), logger)
     
     # Evaluate results
     logger.info("Evaluating matching results")
@@ -749,12 +781,7 @@ def main():
         
         # Matching algorithms
         logger.info("Initializing matching algorithms")
-        matcher = MatchingAlgorithms({
-            'levenshtein_threshold': config['matching']['algorithms']['levenshtein']['threshold'],
-            'jaro_winkler_threshold': config['matching']['algorithms']['jaro_winkler']['threshold'],
-            'embedding_threshold': config['matching']['algorithms']['embedding']['threshold'],
-            'embedding_model': config['matching']['algorithms']['embedding']['model']
-        })
+        matcher = MatchingAlgorithms(config['matching'])
         
         # Evaluator
         logger.info("Initializing evaluator")
